@@ -1,0 +1,2127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>拾马商城 · 平台运营后台</title>
+  <style>
+    :root {
+      --brand: #315CF5;
+      --brand-dark: #2445BE;
+      --ink: #14233B;
+      --ink-2: #35445D;
+      --muted: #718096;
+      --line: #E4E9F1;
+      --surface: #FFFFFF;
+      --canvas: #F4F6FA;
+      --success: #14A889;
+      --warning: #E89A28;
+      --danger: #E24D5C;
+      --nav: #101B32;
+      --nav-soft: #192743;
+      --shadow: 0 10px 32px rgba(20, 35, 59, .08);
+      --radius: 10px;
+      --sidebar: 236px;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 1024px; background: var(--canvas); }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--canvas);
+      font-family: Inter, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid rgba(49, 92, 245, .22);
+      outline-offset: 2px;
+    }
+    svg { display: block; }
+
+    .app { min-height: 100vh; }
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 20;
+      width: var(--sidebar);
+      color: #D7DEED;
+      background: var(--nav);
+      border-right: 1px solid rgba(255,255,255,.05);
+      overflow-y: auto;
+    }
+    .brand {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 22px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: var(--brand);
+      border-radius: 9px 9px 3px 9px;
+      font-weight: 800;
+      letter-spacing: -.04em;
+    }
+    .brand-name { color: #FFF; font-size: 17px; font-weight: 760; letter-spacing: .02em; }
+    .brand-sub { margin-top: 2px; color: #8290AA; font-size: 11px; letter-spacing: .1em; }
+    .nav { padding: 18px 12px 28px; }
+    .nav-group { margin-bottom: 8px; }
+    .nav-parent, .nav-item {
+      width: 100%;
+      border: 0;
+      color: inherit;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+    }
+    .nav-parent {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 0 10px;
+      border-radius: 7px;
+      font-weight: 650;
+    }
+    .nav-parent:hover { background: rgba(255,255,255,.04); }
+    .nav-parent .chevron { margin-left: auto; transition: transform .2s ease; }
+    .nav-group.collapsed .chevron { transform: rotate(-90deg); }
+    .nav-group.collapsed .nav-children { display: none; }
+    .nav-children { padding: 3px 0 4px 36px; }
+    .nav-item {
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: 6px;
+      color: #93A1B9;
+      font-size: 13px;
+      position: relative;
+    }
+    .nav-item:hover { color: white; }
+    .nav-item.active { color: white; background: var(--brand); }
+    .nav-item.active::before {
+      content: "";
+      position: absolute;
+      left: -24px;
+      top: 12px;
+      width: 12px;
+      height: 2px;
+      background: #6FE1CC;
+    }
+    .ico { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    .shell { margin-left: var(--sidebar); min-height: 100vh; }
+    .topbar {
+      height: 72px;
+      position: sticky;
+      top: 0;
+      z-index: 12;
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      background: rgba(255,255,255,.96);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(16px);
+    }
+    .crumb { color: var(--muted); font-size: 13px; }
+    .crumb strong { color: var(--ink); }
+    .top-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .search-global {
+      width: 238px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 0 12px;
+      color: var(--muted);
+      background: #F7F8FB;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .search-global input { width: 100%; border: 0; outline: 0; color: var(--ink); background: transparent; }
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+    }
+    .icon-btn:hover { border-color: #B7C4D8; background: #F8FAFD; }
+    .avatar { width: 34px; height: 34px; display: grid; place-items: center; color: white; background: var(--ink); border-radius: 50%; font-size: 12px; font-weight: 700; }
+
+    .content { padding: 28px; }
+    .page-head { min-height: 38px; display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+    .page-desc { margin: 0; color: var(--muted); font-size: 13px; }
+    .page-actions { margin-left: auto; display: flex; gap: 8px; }
+    .btn {
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 15px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: white;
+      cursor: pointer;
+      font-weight: 650;
+      font-size: 13px;
+    }
+    .btn:hover { border-color: #B8C3D4; background: #F8FAFD; }
+    .btn.primary { color: white; background: var(--brand); border-color: var(--brand); }
+    .btn.primary:hover { background: var(--brand-dark); }
+    .btn.sm { height: 32px; padding: 0 11px; font-size: 12px; }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .stat-card {
+      min-height: 138px;
+      padding: 20px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-top: 3px solid var(--accent, var(--brand));
+      border-radius: 3px 3px var(--radius) var(--radius);
+      box-shadow: 0 5px 18px rgba(20,35,59,.035);
+    }
+    .stat-top { display: flex; align-items: center; color: var(--muted); }
+    .stat-top .ico { margin-left: auto; color: var(--accent, var(--brand)); }
+    .stat-value { margin-top: 14px; font-size: 28px; font-weight: 780; letter-spacing: -.04em; }
+    .stat-foot { display: flex; align-items: center; gap: 7px; margin-top: 9px; font-size: 12px; color: var(--muted); }
+    .delta { color: var(--success); font-weight: 700; }
+
+    .lifecycle {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0,1fr));
+      background: var(--ink);
+      color: white;
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .life-step { min-height: 88px; padding: 17px 16px; border-right: 1px solid rgba(255,255,255,.1); position: relative; }
+    .life-step:last-child { border-right: 0; }
+    .life-label { color: #91A0B9; font-size: 11px; }
+    .life-value { margin-top: 8px; font-size: 17px; font-weight: 740; }
+    .life-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); position: absolute; right: 13px; top: 17px; box-shadow: 0 0 0 4px rgba(20,168,137,.15); }
+    .life-step.warn .life-dot { background: var(--warning); box-shadow: 0 0 0 4px rgba(232,154,40,.16); }
+
+    .dashboard-grid { margin-top: 14px; display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, .8fr); gap: 14px; }
+    .panel { background: white; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 4px 16px rgba(20,35,59,.035); }
+    .panel-head { min-height: 58px; display: flex; align-items: center; padding: 0 18px; border-bottom: 1px solid var(--line); }
+    .panel-title { font-size: 15px; font-weight: 730; }
+    .panel-sub { margin-left: 10px; color: var(--muted); font-size: 12px; }
+    .panel-more { margin-left: auto; color: var(--brand); font-size: 12px; font-weight: 650; cursor: pointer; border: 0; background: none; }
+    .chart-wrap { height: 272px; padding: 20px 20px 10px; position: relative; }
+    .chart-grid { position: absolute; inset: 28px 20px 38px; display: grid; grid-template-rows: repeat(4,1fr); }
+    .chart-grid span { border-top: 1px dashed #E7EBF2; }
+    .bars { height: 210px; position: relative; z-index: 1; display: flex; align-items: end; gap: 12px; padding: 0 14px; }
+    .bar-pair { flex: 1; height: 100%; display: flex; align-items: end; justify-content: center; gap: 5px; position: relative; }
+    .bar { width: 11px; height: var(--h); min-height: 4px; background: var(--brand); border-radius: 3px 3px 0 0; transition: filter .2s, transform .2s; }
+    .bar.api { background: var(--success); opacity: .85; }
+    .bar-pair:hover .bar { filter: brightness(.94); transform: translateY(-2px); }
+    .bar-label { position: absolute; bottom: -25px; color: var(--muted); font-size: 10px; }
+    .legend { display: flex; gap: 15px; margin-left: auto; color: var(--muted); font-size: 11px; }
+    .legend span::before { content: ""; width: 8px; height: 8px; display: inline-block; margin-right: 5px; background: var(--brand); border-radius: 2px; }
+    .legend span:last-child::before { background: var(--success); }
+    .todo-list { padding: 7px 18px 12px; }
+    .todo { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 10px; min-height: 58px; border-bottom: 1px solid var(--line); }
+    .todo:last-child { border: 0; }
+    .todo-icon { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 7px; color: var(--tone); background: color-mix(in srgb, var(--tone) 10%, white); }
+    .todo-name { font-size: 13px; font-weight: 650; }
+    .todo-desc { margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .todo-count { color: var(--tone); font-size: 18px; font-weight: 760; }
+
+    .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 14px; background: white; border: 1px solid var(--line); border-radius: var(--radius); }
+    .field { height: 36px; min-width: 150px; padding: 0 11px; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); background: white; outline: 0; }
+    .field.search { width: 250px; }
+    .query-actions { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .reconciliation-kpis {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .reconciliation-kpi {
+      min-width: 0;
+      min-height: 112px;
+      padding: 14px 15px;
+      background: white;
+      border: 1px solid var(--line);
+      border-top: 3px solid var(--kpi-tone, var(--brand));
+      border-radius: 3px 3px var(--radius) var(--radius);
+      box-shadow: 0 4px 16px rgba(20,35,59,.035);
+    }
+    .reconciliation-kpi.tone-brand { --kpi-tone: var(--brand); }
+    .reconciliation-kpi.tone-success { --kpi-tone: var(--success); }
+    .reconciliation-kpi.tone-warning { --kpi-tone: var(--warning); }
+    .reconciliation-kpi.tone-danger { --kpi-tone: var(--danger); }
+    .reconciliation-kpi > span { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11px; }
+    .reconciliation-kpi > span::before { content: ""; width: 6px; height: 6px; flex: 0 0 auto; border-radius: 50%; background: var(--kpi-tone, var(--brand)); }
+    .reconciliation-kpi strong { display: block; margin-top: 11px; color: var(--ink); font-size: clamp(17px, 1.35vw, 21px); font-weight: 780; font-variant-numeric: tabular-nums; letter-spacing: -.035em; overflow-wrap: anywhere; }
+    .reconciliation-kpi small { display: block; margin-top: 8px; color: var(--muted); font-size: 10px; line-height: 1.35; }
+    .quick-tabs { display: flex; align-items: center; gap: 4px; margin-bottom: 14px; padding: 0 14px; overflow-x: auto; background: white; border: 1px solid var(--line); border-radius: var(--radius); }
+    .quick-tab { min-height: 48px; display: inline-flex; align-items: center; gap: 7px; padding: 0 14px; color: var(--muted); background: transparent; border: 0; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; }
+    .quick-tab.active { color: var(--brand); border-bottom-color: var(--brand); font-weight: 700; }
+    .quick-tab-count { min-width: 20px; padding: 2px 6px; color: var(--muted); background: #F1F3F7; border-radius: 10px; font-size: 10px; text-align: center; }
+    .quick-tab.active .quick-tab-count { color: var(--brand-dark); background: #EEF2FF; }
+    .table-card { margin-top: 14px; overflow: hidden; background: white; border: 1px solid var(--line); border-radius: var(--radius); }
+    .data-table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+    .data-table th { height: 44px; padding: 0 15px; color: #68758A; background: #F8FAFC; border-bottom: 1px solid var(--line); font-size: 11px; font-weight: 720; text-align: left; letter-spacing: .02em; }
+    .data-table td { height: 58px; padding: 0 15px; border-bottom: 1px solid #EEF1F5; font-size: 12px; }
+    .data-table tbody tr:hover { background: #FAFBFF; }
+    [data-product-layout] .data-table th:last-child,
+    [data-product-layout] .data-table td:last-child,
+    [data-supplier-source-page] .data-table th:last-child,
+    [data-supplier-source-page] .data-table td:last-child { position: sticky; right: 0; z-index: 1; min-width: 220px; background: white; border-left: 1px solid var(--line); }
+    [data-product-layout] .data-table th:last-child,
+    [data-supplier-source-page] .data-table th:last-child { z-index: 2; background: #F8FAFC; }
+    [data-product-layout] .data-table tbody tr:hover td:last-child,
+    [data-supplier-source-page] .data-table tbody tr:hover td:last-child { background: #FAFBFF; }
+    .link { color: var(--brand); font-weight: 680; cursor: pointer; border: 0; background: none; padding: 0; }
+    .link.danger-link { color: var(--danger); }
+    .link:disabled { cursor: not-allowed; opacity: .48; }
+    .order-table th:last-child,
+    .order-table td:last-child { position: sticky; right: 0; z-index: 2; min-width: 190px; background: white; box-shadow: -8px 0 12px rgba(20,35,59,.025); }
+    .order-table th:last-child { z-index: 3; background: #F8FAFC; }
+    .order-table tbody tr:hover td:last-child { background: #FAFBFF; }
+    .order-actions { display: flex; align-items: center; gap: 11px; white-space: nowrap; }
+    .order-action-error { margin: -4px 20px 16px; padding: 9px 11px; color: #B72F40; background: #FFF1F3; border-left: 3px solid var(--danger); border-radius: 4px; font-size: 11px; }
+    .order-action-error[hidden] { display: none; }
+    .order-action-note { padding: 11px 12px; color: var(--ink-2); background: #F6F8FC; border: 1px solid var(--line); border-radius: 7px; font-size: 12px; line-height: 1.6; }
+    .order-confirmation { min-height: 42px; display: flex; align-items: center; gap: 9px; padding: 0 11px; background: #FFF8EB; border: 1px solid #F3D9AB; border-radius: 7px; color: #80580D; font-size: 12px; }
+    .order-confirmation input { accent-color: var(--danger); }
+    .tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 5px; color: var(--muted); background: #F1F3F7; font-size: 11px; font-weight: 650; }
+    .tag::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    .tag.success { color: #0B856D; background: #E8F7F3; }
+    .tag.warning { color: #A96708; background: #FFF4DF; }
+    .tag.danger { color: #C63C4A; background: #FDECEE; }
+    .tag.info { color: var(--brand-dark); background: #EEF2FF; }
+    .muted { color: var(--muted); }
+    .money { font-variant-numeric: tabular-nums; font-weight: 650; }
+    .pagination { min-height: 62px; display: flex; align-items: center; justify-content: flex-end; gap: 6px; padding: 0 16px; }
+    .page-btn { min-width: 32px; height: 32px; padding: 0 9px; border: 1px solid var(--line); border-radius: 6px; background: white; cursor: pointer; font-size: 12px; }
+    .page-btn.active { color: white; background: var(--brand); border-color: var(--brand); }
+    .tree-layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 14px; }
+    .tree { min-height: 590px; padding: 14px; background: white; border: 1px solid var(--line); border-radius: var(--radius); }
+    .tree-title { margin: 2px 2px 12px; font-size: 14px; font-weight: 730; }
+    .tree-search { width: 100%; margin-bottom: 12px; }
+    .tree-node { min-height: 36px; display: flex; align-items: center; gap: 7px; padding: 0 9px; border-radius: 6px; cursor: pointer; }
+    .tree-node:hover { background: #F6F8FC; }
+    .tree-node.active { color: var(--brand-dark); background: #EEF2FF; font-weight: 700; }
+    .tree-node.l2 { padding-left: 28px; }
+    .tree-node.l3 { padding-left: 48px; }
+    .tree-count { margin-left: auto; color: var(--muted); font-size: 10px; }
+    .product-catalog-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 14px; align-items: start; }
+    .product-category-tree { min-height: 590px; padding: 12px; background: white; border: 1px solid var(--line); border-radius: var(--radius); }
+    .product-tree-list { display: grid; gap: 2px; }
+    .product-tree-row { display: grid; grid-template-columns: 24px minmax(0, 1fr); align-items: center; gap: 2px; }
+    .product-tree-row.child { padding-left: 26px; }
+    .product-tree-expander {
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .product-tree-expander:hover { color: var(--brand); background: #F1F4FA; }
+    .product-tree-expander.collapsed svg { transform: rotate(-90deg); }
+    .product-tree-spacer { width: 24px; }
+    .product-category-node {
+      min-width: 0;
+      min-height: 36px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0 9px;
+      color: var(--ink);
+      background: transparent;
+      border: 0;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: left;
+    }
+    .product-category-node:hover { background: #F6F8FC; }
+    .product-category-node.active { color: var(--brand-dark); background: #EEF2FF; font-weight: 700; }
+    .product-category-node span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .product-category-node .tree-count { flex: 0 0 auto; }
+    .product-list-panel { min-width: 0; }
+    .product-current-category { display: inline-flex; align-items: center; min-height: 36px; padding: 0 11px; color: var(--muted); background: #F6F8FC; border-radius: 7px; white-space: nowrap; }
+    .product-current-category strong { margin-left: 5px; color: var(--ink); }
+    .category-tree-table { min-width: 1080px; }
+    .category-tree-table .category-parent-row { background: #FBFCFF; }
+    .category-tree-table .category-parent-row td { font-weight: 680; }
+    .category-tree-table .category-child-row td { background: white; }
+    .category-name-cell { min-width: 190px; display: flex; align-items: center; gap: 9px; }
+    .category-name-cell.child { padding-left: 34px; }
+    .category-expander {
+      width: 24px;
+      height: 24px;
+      display: grid;
+      flex: 0 0 auto;
+      place-items: center;
+      padding: 0;
+      color: var(--muted);
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease;
+    }
+    .category-expander:hover { color: var(--brand); border-color: #B7C4D8; }
+    .category-expander.collapsed svg { transform: rotate(-90deg); }
+    .category-branch { width: 12px; height: 1px; flex: 0 0 auto; background: #C4CDDA; }
+    .category-code { color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+    .count-link { color: var(--brand-dark); font-weight: 740; }
+    .row-actions { display: flex; align-items: center; gap: 12px; }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(16,27,50,.45);
+      backdrop-filter: blur(3px);
+    }
+    .modal-backdrop[hidden] { display: none !important; }
+    .modal-card { width: min(560px, calc(100vw - 48px)); max-height: calc(100vh - 48px); overflow: auto; background: white; border-radius: 12px; box-shadow: 0 24px 70px rgba(20,35,59,.24); }
+    .modal-card.wide { width: min(780px, calc(100vw - 48px)); }
+    .modal-head { min-height: 64px; display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid var(--line); }
+    .modal-title { font-size: 16px; font-weight: 760; }
+    .modal-close { margin-left: auto; width: 32px; height: 32px; border: 0; border-radius: 6px; color: var(--muted); background: #F4F6FA; cursor: pointer; }
+    .modal-form { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; padding: 20px; }
+    .modal-field { display: grid; gap: 7px; }
+    .modal-field[hidden] { display: none !important; }
+    .modal-field.full { grid-column: 1 / -1; }
+    .modal-field label { color: var(--muted); font-size: 12px; }
+    .modal-field .field { width: 100%; }
+    .modal-actions { min-height: 64px; display: flex; align-items: center; justify-content: flex-end; gap: 9px; padding: 0 20px; background: #F8FAFC; border-top: 1px solid var(--line); }
+    .modal-actions [hidden] { display: none !important; }
+    .person-cell { display: flex; align-items: center; gap: 10px; }
+    .person-mark { width: 30px; height: 30px; display: grid; flex: 0 0 auto; place-items: center; color: var(--brand-dark); background: #EEF2FF; border-radius: 8px; font-size: 11px; font-weight: 760; }
+    .person-name { font-weight: 700; }
+    .person-id { margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .permission-tree { display: grid; gap: 10px; max-height: 350px; padding: 0 20px 20px; overflow: auto; }
+    .permission-group { overflow: hidden; border: 1px solid var(--line); border-radius: 8px; }
+    .permission-parent { min-height: 46px; display: flex; align-items: center; gap: 9px; padding: 0 13px; background: #F8FAFC; border-bottom: 1px solid var(--line); font-weight: 700; }
+    .permission-parent span { margin-left: auto; color: var(--muted); font-size: 11px; font-weight: 500; }
+    .permission-children { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; padding: 8px; }
+    .permission-item { min-height: 38px; display: flex; align-items: center; gap: 8px; padding: 0 9px; border-radius: 6px; color: var(--ink-2); font-size: 12px; }
+    .permission-item:hover { background: #F5F7FB; }
+    .permission-tree input { accent-color: var(--brand); }
+    .detail-panel { min-width: 0; }
+    .tabs { min-height: 50px; display: flex; align-items: end; gap: 24px; padding: 0 18px; border-bottom: 1px solid var(--line); }
+    .tab { height: 50px; border: 0; border-bottom: 2px solid transparent; background: transparent; cursor: pointer; color: var(--muted); }
+    .tab.active { color: var(--brand); border-color: var(--brand); font-weight: 700; }
+    .tab-body { padding: 18px; }
+    .mapping-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 16px; }
+    .mini-stat { padding: 13px; background: #F7F9FC; border-left: 3px solid var(--brand); }
+    .mini-stat span { color: var(--muted); font-size: 11px; }
+    .mini-stat strong { display: block; margin-top: 6px; font-size: 19px; }
+    .mapping-compare {
+      position: relative;
+      min-height: 590px;
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) minmax(180px, .62fr) minmax(280px, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+      isolation: isolate;
+    }
+    .mapping-tree-panel {
+      position: relative;
+      z-index: 2;
+      min-width: 0;
+      overflow: hidden;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 16px rgba(20,35,59,.035);
+    }
+    .mapping-tree-head {
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 15px;
+      border-bottom: 1px solid var(--line);
+    }
+    .mapping-tree-head strong { font-size: 14px; }
+    .mapping-tree-head span { margin-left: auto; color: var(--muted); font-size: 11px; }
+    .mapping-tree-body { min-height: 534px; padding: 12px; }
+    .mapping-platform-tree .product-category-node { cursor: default; }
+    .mapping-platform-tree .product-category-node.level-two { min-height: 42px; border: 1px solid transparent; }
+    .mapping-platform-tree .product-category-node.level-two.mapped-target { border-color: #CFE8E3; background: #F4FBF9; }
+    .mapping-platform-tree .product-category-node.level-two.relation-active { color: var(--brand-dark); border-color: #AFC0FF; background: #EEF2FF; }
+    .mapping-source-groups { display: grid; gap: 8px; }
+    .mapping-source-group { min-width: 0; }
+    .mapping-source-parent {
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0 4px;
+      color: var(--ink-2);
+      font-weight: 700;
+    }
+    .mapping-source-parent .product-tree-expander { flex: 0 0 auto; }
+    .mapping-source-children { display: grid; gap: 7px; padding: 2px 0 2px 26px; }
+    .mapping-source-node {
+      position: relative;
+      z-index: 4;
+      min-width: 0;
+      min-height: 82px;
+      padding: 10px 11px;
+      background: white;
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--success);
+      border-radius: 8px;
+      transition: border-color .18s, background .18s, opacity .18s, box-shadow .18s;
+    }
+    .mapping-source-node.unmapped { border-left-color: var(--warning); }
+    .mapping-source-node.invalid { border-left-color: var(--danger); background: #FFFBFC; }
+    .mapping-source-node:hover, .mapping-source-node:focus-within, .mapping-source-node.relation-active {
+      border-color: #AFC0FF;
+      background: #F8FAFF;
+      box-shadow: 0 5px 14px rgba(49,92,245,.08);
+    }
+    .mapping-source-main { min-width: 0; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; align-items: start; }
+    .mapping-source-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 720; }
+    .mapping-source-code { margin-top: 4px; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; }
+    .mapping-source-meta { display: flex; align-items: center; gap: 7px; }
+    .mapping-source-meta .tag { white-space: nowrap; }
+    .mapping-source-foot { min-width: 0; display: flex; align-items: center; gap: 9px; margin-top: 9px; }
+    .mapping-product-count { color: var(--brand-dark); font-size: 11px; font-weight: 740; white-space: nowrap; }
+    .mapping-source-actions { min-width: 0; display: flex; align-items: center; gap: 9px; margin-left: auto; }
+    .mapping-source-actions .link { font-size: 11px; white-space: nowrap; }
+    .mapping-relation-column {
+      position: relative;
+      z-index: 0;
+      min-width: 0;
+      border: 1px dashed #D9E0EC;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.45), rgba(238,242,255,.52));
+    }
+    .mapping-relation-column > span {
+      position: sticky;
+      top: 86px;
+      display: block;
+      padding-top: 18px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 760;
+      text-align: center;
+      letter-spacing: .08em;
+    }
+    .mapping-relations { position: absolute; inset: 0; z-index: 3; pointer-events: none; overflow: hidden; }
+    .mapping-relations svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+    .mapping-relation-path { fill: none; stroke: var(--success); stroke-width: 2; opacity: .82; transition: opacity .18s, stroke-width .18s; }
+    .mapping-relation-path.invalid { stroke: var(--danger); stroke-dasharray: 5 5; opacity: .46; }
+    .mapping-relation-label {
+      position: absolute;
+      z-index: 4;
+      transform: translate(-50%, -50%);
+      min-width: 72px;
+      padding: 5px 8px;
+      color: #147965;
+      background: #F1FAF8;
+      border: 1px solid #BFE4DB;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 760;
+      text-align: center;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(20,35,59,.06);
+      transition: opacity .18s, transform .18s;
+    }
+    .mapping-relation-label.invalid { color: #A7404D; background: #FFF6F7; border-color: #F4C8CE; }
+    .mapping-compare.relation-highlighting .mapping-relation-path,
+    .mapping-compare.relation-highlighting .mapping-relation-label,
+    .mapping-compare.relation-highlighting .mapping-source-node { opacity: .18; }
+    .mapping-compare.relation-highlighting .mapping-relation-path.relation-active { opacity: 1; stroke-width: 3; }
+    .mapping-compare.relation-highlighting .mapping-relation-label.relation-active,
+    .mapping-compare.relation-highlighting .mapping-source-node.relation-active { opacity: 1; }
+    .mapping-empty { min-height: 170px; display: grid; place-items: center; color: var(--muted); font-size: 12px; text-align: center; }
+    .config-grid { display: grid; grid-template-columns: 1.05fr 1.4fr; gap: 14px; }
+    .config-card { padding: 18px; background: white; border: 1px solid var(--line); border-radius: var(--radius); }
+    .config-card h2 { margin: 0; font-size: 16px; }
+    .config-card p { margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .api-doc-overview { display: grid; gap: 18px; }
+    .api-doc-meta { display: grid; grid-template-columns: minmax(320px, 1.5fr) repeat(3, minmax(140px, .7fr)); gap: 1px; overflow: hidden; background: var(--line); border: 1px solid var(--line); border-radius: 8px; }
+    .api-doc-meta .detail-item:first-child strong { color: var(--brand-dark); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; overflow-wrap: anywhere; }
+    .api-doc-directory-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-top: 2px; }
+    .api-doc-directory-head strong { font-size: 15px; }
+    .api-doc-directory-head span { color: var(--muted); font-size: 12px; }
+    .api-doc-section-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+    .api-doc-section-grid article { min-height: 64px; display: flex; align-items: center; gap: 13px; padding: 0 16px; background: #FBFCFE; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .api-doc-section-grid article:nth-child(2n) { border-right: 0; }
+    .api-doc-section-grid article:nth-last-child(-n+2) { border-bottom: 0; }
+    .api-doc-section-grid article span { width: 28px; color: var(--brand); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; font-weight: 760; }
+    .api-doc-section-grid article strong { font-size: 13px; }
+    .form-row { display: grid; grid-template-columns: 130px minmax(0,1fr); align-items: center; gap: 12px; min-height: 54px; border-bottom: 1px solid var(--line); }
+    .form-row:last-child { border-bottom: 0; }
+    .form-label { color: var(--muted); font-size: 12px; }
+    .check-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 16px; }
+    .check-item { display: flex; align-items: center; gap: 9px; min-height: 42px; padding: 0 11px; background: #F7F9FC; border: 1px solid var(--line); border-radius: 7px; }
+    .check-item input { accent-color: var(--brand); }
+    .analysis-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-bottom: 14px; padding: 5px; background: white; border: 1px solid var(--line); border-radius: var(--radius); }
+    .analysis-tab { min-height: 54px; display: flex; align-items: center; gap: 12px; padding: 0 15px; color: var(--muted); background: transparent; border: 0; border-radius: 7px; cursor: pointer; text-align: left; }
+    .analysis-tab:hover { color: var(--ink); background: #F6F8FC; }
+    .analysis-tab.active { color: white; background: var(--brand); box-shadow: 0 6px 16px rgba(49,92,245,.2); }
+    .analysis-tab > span { min-width: 0; }
+    .analysis-tab strong { display: block; font-size: 13px; }
+    .analysis-tab small { display: block; margin-top: 4px; color: inherit; font-size: 10px; opacity: .78; }
+    .analysis-tab b { margin-left: auto; white-space: nowrap; font-size: 11px; }
+    .analysis-overview { display: grid; grid-template-columns: minmax(300px, 34fr) minmax(560px, 66fr); gap: 14px; align-items: stretch; }
+    .analysis-metric-panel, .flow-panel { min-width: 0; overflow: hidden; background: white; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 4px 16px rgba(20,35,59,.035); }
+    .analysis-section-head, .flow-head { min-height: 56px; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--line); }
+    .analysis-section-head strong, .flow-head strong { font-size: 15px; font-weight: 760; }
+    .analysis-section-head span, .flow-head span, .flow-head > small { color: var(--muted); font-size: 11px; }
+    .flow-head > small { margin-left: auto; white-space: nowrap; }
+    .analysis-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line); }
+    .analysis-metric { min-width: 0; min-height: 91px; padding: 13px 14px; background: white; }
+    .analysis-metric > span { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11px; }
+    .analysis-metric > span::before { content: ""; width: 6px; height: 6px; flex: 0 0 auto; border-radius: 50%; background: var(--metric-tone, var(--brand)); }
+    .analysis-metric strong { display: block; margin-top: 9px; overflow-wrap: anywhere; font-size: 20px; font-weight: 780; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
+    .analysis-metric small { display: block; margin-top: 7px; color: var(--muted); font-size: 10px; line-height: 1.35; }
+    .flow-body { padding: 14px 16px 16px; }
+    .flow-legend { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; color: var(--muted); font-size: 10px; }
+    .flow-legend span { display: inline-flex; align-items: center; gap: 5px; }
+    .flow-legend i { width: 7px; height: 7px; border-radius: 2px; background: var(--brand); }
+    .flow-legend span:nth-child(2) i { background: var(--success); }
+    .flow-legend span:nth-child(3) i { background: var(--warning); }
+    .flow-label { margin: 0 0 7px; color: var(--muted); font-size: 9px; font-weight: 760; letter-spacing: .12em; }
+    .flow-lane { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+    .flow-node { min-width: 0; min-height: 82px; position: relative; padding: 11px 10px; border: 1px solid #DCE4FF; border-radius: 8px; background: #F3F5FF; }
+    .flow-node:not(:last-child)::after { content: "→"; position: absolute; top: 50%; right: -14px; color: #A4AEBE; transform: translateY(-50%); }
+    .flow-node > span { display: block; color: #667795; font-size: 10px; line-height: 1.3; }
+    .flow-node strong { display: block; margin-top: 7px; color: var(--brand-dark); font-size: 14px; font-weight: 760; font-variant-numeric: tabular-nums; }
+    .flow-node small { display: block; margin-top: 6px; color: var(--muted); font-size: 9px; line-height: 1.3; }
+    .fund-lane .flow-node { border-color: #CEEDE6; background: #EFFAF7; }
+    .fund-lane .flow-node strong { color: #087764; }
+    .fund-lane .flow-node.terminal { border-color: #F3D9AB; background: #FFF8EB; }
+    .fund-lane .flow-node.terminal strong { color: #A96708; }
+    .flow-connections { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); min-height: 46px; }
+    .flow-connections div { display: grid; justify-items: center; align-content: start; color: var(--muted); font-size: 9px; text-align: center; }
+    .flow-connections i { height: 20px; border-left: 1px dashed #AAB5C6; }
+    .flow-connections span { line-height: 1.2; }
+    .flow-exceptions { display: flex; align-items: center; gap: 9px; margin-top: 12px; padding: 10px 12px; border-left: 3px solid var(--warning); background: #FFF8EB; color: #80580D; font-size: 10px; line-height: 1.45; }
+    .flow-exceptions strong { flex: 0 0 auto; font-size: 11px; }
+    .report-section { margin-top: 14px; }
+    .report-head { min-height: 58px; display: flex; align-items: center; gap: 12px; padding: 0 18px; border-bottom: 1px solid var(--line); }
+    .report-title { font-size: 15px; font-weight: 760; }
+    .report-note { color: var(--muted); font-size: 12px; }
+    .report-head .report-note:last-child { margin-left: auto; }
+    .report-body { padding: 16px 18px 18px; }
+    .channel-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border-radius: 5px; color: var(--brand-dark); background: #EEF2FF; font-size: 11px; font-weight: 760; }
+    .channel-badge.api { color: #087764; background: #E8F7F3; }
+    .switch { width: 38px; height: 22px; position: relative; display: inline-block; padding: 0; border: 0; border-radius: 999px; background: #C7CED9; cursor: pointer; vertical-align: middle; }
+    .switch::after { content: ""; width: 16px; height: 16px; position: absolute; top: 3px; left: 3px; border-radius: 50%; background: white; box-shadow: 0 1px 4px rgba(20,35,59,.22); transition: .18s ease; }
+    .switch.on { background: var(--success); }
+    .switch.on::after { transform: translateX(16px); }
+    .switch-label { margin-left: 6px; color: var(--muted); font-size: 11px; }
+    .section-actions { margin-left: auto; display: flex; gap: 8px; }
+    .split-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+    .detail-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; overflow: hidden; border: 1px solid var(--line); background: var(--line); border-radius: 8px; }
+    .detail-item { min-height: 72px; padding: 14px; background: white; }
+    .detail-item span { color: var(--muted); font-size: 11px; }
+    .detail-item strong { display: block; margin-top: 7px; font-size: 14px; }
+    .toast { position: fixed; right: 24px; bottom: 24px; z-index: 50; transform: translateY(20px); opacity: 0; padding: 13px 16px; color: white; background: var(--ink); border-radius: 8px; box-shadow: var(--shadow); transition: .22s ease; pointer-events: none; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 1240px) {
+      .analysis-overview { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 1180px) {
+      :root { --sidebar: 208px; }
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+      .lifecycle { grid-template-columns: repeat(4, 1fr); }
+      .life-step { border-bottom: 1px solid rgba(255,255,255,.1); }
+      .search-global { width: 190px; }
+      .mapping-compare { grid-template-columns: minmax(220px, 1fr) 128px minmax(240px, 1fr); gap: 8px; }
+      .mapping-source-children { padding-left: 12px; }
+      .mapping-source-actions { gap: 6px; }
+      .reconciliation-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+    <symbol id="i-building" viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16"/><path d="M9 21v-4h6v4M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="m21 8-9 5-9-5 9-5 9 5Z"/><path d="m3 8 9 5v9l-9-5V8Zm18 0-9 5v9l9-5V8Z"/></symbol>
+    <symbol id="i-order" viewBox="0 0 24 24"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2Z"/><path d="M9 7h6M9 11h6M9 15h4"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M4 6h14a2 2 0 0 1 2 2v10H4a2 2 0 0 1-2-2V5a3 3 0 0 1 3-3h12"/><path d="M16 11h6v4h-6a2 2 0 1 1 0-4Z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 5h16M7 12h10M10 19h4"/></symbol>
+    <symbol id="i-trend" viewBox="0 0 24 24"><path d="m3 17 6-6 4 4 8-9"/><path d="M15 6h6v6"/></symbol>
+    <symbol id="i-sync" viewBox="0 0 24 24"><path d="M20 7h-5V2M4 17h5v5"/><path d="M5.5 9a7 7 0 0 1 11.8-2.6L20 7M4 17l2.7.6A7 7 0 0 0 18.5 15"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9v5M12 17h.01"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.1A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.1A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.1A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.2.38.55.73 1 .93.34.15.71.22 1.1.2h.1v4h-.1c-.4-.02-.76.05-1.1.2-.45.2-.8.55-1 .93Z"/></symbol>
+  </svg>
+
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark">拾</div><div><div class="brand-name">拾马商城</div><div class="brand-sub">SHIMA MALL</div></div></div>
+      <nav class="nav" aria-label="主导航">
+        <div class="nav-group">
+          <button class="nav-parent"><svg class="ico"><use href="#i-grid"/></svg>经营看板<svg class="ico chevron"><use href="#i-chevron"/></svg></button>
+          <div class="nav-children">
+            <button class="nav-item active" data-view="dashboard">经营总览</button>
+            <button class="nav-item" data-view="channel-analysis">渠道经营分析</button>
+          </div>
+        </div>
+        <div class="nav-group">
+          <button class="nav-parent"><svg class="ico"><use href="#i-building"/></svg>小程序商城客户<svg class="ico chevron"><use href="#i-chevron"/></svg></button>
+          <div class="nav-children">
+            <button class="nav-item" data-view="mini-enterprises">小程序客户</button>
+            <button class="nav-item" data-view="mini-orders">商城订单</button>
+            <button class="nav-item" data-view="points-accounts">积分对账</button>
+          </div>
+        </div>
+        <div class="nav-group">
+          <button class="nav-parent"><svg class="ico"><use href="#i-order"/></svg>API供货客户<svg class="ico chevron"><use href="#i-chevron"/></svg></button>
+          <div class="nav-children">
+            <button class="nav-item" data-view="api-clients">API客户</button>
+            <button class="nav-item" data-view="api-orders">API订单</button>
+            <button class="nav-item" data-view="api-reconciliation">资金对账</button>
+          </div>
+        </div>
+        <div class="nav-group">
+          <button class="nav-parent"><svg class="ico"><use href="#i-box"/></svg>商品库<svg class="ico chevron"><use href="#i-chevron"/></svg></button>
+          <div class="nav-children">
+            <button class="nav-item" data-view="category">分类管理</button>
+            <button class="nav-item" data-view="products">商品管理</button>
+          </div>
+        </div>
+        <div class="nav-group">
+          <button class="nav-parent"><svg class="ico"><use href="#i-wallet"/></svg>供货平台管理<svg class="ico chevron"><use href="#i-chevron"/></svg></button>
+          <div class="nav-children">
+            <button class="nav-item" data-view="suppliers">供货平台</button>
+            <button class="nav-item" data-view="category-mapping">分类映射</button>
+          </div>
+        </div>
+        <div class="nav-group">
+          <button class="nav-parent"><svg class="ico"><use href="#i-settings"/></svg>系统管理<svg class="ico chevron"><use href="#i-chevron"/></svg></button>
+          <div class="nav-children">
+            <button class="nav-item" data-view="system-users">用户管理</button>
+            <button class="nav-item" data-view="system-roles">角色权限</button>
+            <button class="nav-item" data-view="system-api-docs">API文档</button>
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="shell">
+      <header class="topbar">
+        <div class="crumb">平台运营后台&nbsp;&nbsp;/&nbsp;&nbsp;<strong id="crumbCurrent">经营总览</strong></div>
+        <div class="top-actions">
+          <label class="search-global"><svg class="ico"><use href="#i-search"/></svg><input aria-label="全局搜索" placeholder="搜索企业、订单、商品"></label>
+          <button class="icon-btn" aria-label="通知" title="通知"><svg class="ico"><use href="#i-bell"/></svg></button>
+          <div class="avatar" title="平台账号">平台</div>
+        </div>
+      </header>
+      <section class="content" id="content"></section>
+    </main>
+  </div>
+  <div class="toast" id="toast">操作已完成</div>
+
+  <script>
+    const icon = id => `<svg class="ico"><use href="#${id}"/></svg>`;
+    const tag = (text, tone='') => `<span class="tag ${tone}">${text}</span>`;
+    const switchControl = (on, label) => `<button class="switch ${on ? 'on' : ''}" data-switch aria-label="${label}"></button><span class="switch-label">${on ? '已开启' : '已关闭'}</span>`;
+    const queryToolbar = fields => `<div class="toolbar" data-query-form>${fields}<span class="query-actions"><button class="btn primary" data-query-submit>查询</button><button class="btn" data-query-reset>重置</button></span></div>`;
+    const toast = message => {
+      const el = document.getElementById('toast');
+      el.textContent = message;
+      el.classList.add('show');
+      clearTimeout(window.toastTimer);
+      window.toastTimer = window.setTimeout(() => el.classList.remove('show'), 1900);
+    };
+    const toneFor = text => text.includes('正常') || text.includes('启用') || text.includes('成功') || text.includes('完成') || text.includes('结清') || text.includes('充足') || text.includes('一致') || text.includes('已映射') ? 'success' : text.includes('待') || text.includes('紧张') || text.includes('部分') || text.includes('处理') || text.includes('不足') || text.includes('差异') ? 'warning' : text.includes('停用') || text.includes('冻结') || text.includes('失败') || text.includes('无货') || text.includes('逾期') ? 'danger' : 'info';
+    const pagination = (total='128') => `<div class="pagination"><span class="muted" style="margin-right:8px">共 ${total} 条</span><button class="page-btn">‹</button><button class="page-btn active" data-page="1">1</button><button class="page-btn" data-page="2">2</button><button class="page-btn" data-page="3">3</button><button class="page-btn">…</button><button class="page-btn">13</button><button class="page-btn">›</button></div>`;
+
+    const dashboard = () => `
+      <div class="page-head"><p class="page-desc">客户侧交易闭环 · 数据更新于 08-14 14:32</p><div class="page-actions"><select class="field"><option>本月</option><option>本周</option><option>今天</option></select><button class="btn" onclick="toast('数据已刷新')">${icon('i-sync')}刷新数据</button></div></div>
+      <div class="stat-grid">
+        <article class="stat-card" style="--accent:var(--brand)"><div class="stat-top">本月交易额 ${icon('i-trend')}</div><div class="stat-value">¥ 1,284,630</div><div class="stat-foot"><span class="delta">↑ 12.6%</span><span>较上月</span></div></article>
+        <article class="stat-card" style="--accent:var(--success)"><div class="stat-top">有效订单 ${icon('i-order')}</div><div class="stat-value">3,846</div><div class="stat-foot"><span class="delta">↑ 8.2%</span><span>小程序 62% · API 38%</span></div></article>
+        <article class="stat-card" style="--accent:var(--warning)"><div class="stat-top">采购成本 ${icon('i-box')}</div><div class="stat-value">¥ 978,420</div><div class="stat-foot"><span>预计毛利率</span><strong>23.8%</strong></div></article>
+        <article class="stat-card" style="--accent:var(--danger)"><div class="stat-top">待回款 ${icon('i-wallet')}</div><div class="stat-value">¥ 268,900</div><div class="stat-foot"><span class="tag danger">逾期 ¥36,200</span><span>9 家企业</span></div></article>
+      </div>
+      <section class="lifecycle" aria-label="业务闭环状态">${[['企业启用','38 家'],['商品在售','1,286 个'],['今日下单','186 单'],['采购受理','179 单'],['已发货','142 单'],['待出账','¥ 86,240'],['待回款','¥ 268,900']].map((item,index)=>`<div class="life-step ${index===3||index===6?'warn':''}"><div class="life-dot"></div><div class="life-label">${item[0]}</div><div class="life-value">${item[1]}</div></div>`).join('')}</section>
+      <div class="dashboard-grid">
+        <section class="panel"><div class="panel-head"><span class="panel-title">渠道交易趋势</span><span class="panel-sub">近 7 天</span><div class="legend"><span>小程序</span><span>供货 API</span></div></div><div class="chart-wrap"><div class="chart-grid"><span></span><span></span><span></span><span></span></div><div class="bars">${[['42%','25%','08/08'],['58%','32%','08/09'],['48%','40%','08/10'],['66%','45%','08/11'],['60%','38%','08/12'],['76%','51%','08/13'],['86%','62%','08/14']].map(item=>`<div class="bar-pair"><i class="bar" style="--h:${item[0]}"></i><i class="bar api" style="--h:${item[1]}"></i><span class="bar-label">${item[2]}</span></div>`).join('')}</div></div></section>
+        <section class="panel"><div class="panel-head"><span class="panel-title">待处理事项</span><button class="panel-more" data-goto="mini-orders">查看商城订单</button></div><div class="todo-list">${[['i-alert','采购结果待确认','上游返回结果未知','7','var(--danger)'],['i-box','待发货订单','已受理超过 24 小时','18','var(--warning)'],['i-order','售后待处理','等待平台确认结果','5','var(--brand)'],['i-wallet','账单已逾期','需跟进企业回款','3','var(--danger)']].map(item=>`<div class="todo" style="--tone:${item[4]}"><span class="todo-icon">${icon(item[0])}</span><div><div class="todo-name">${item[1]}</div><div class="todo-desc">${item[2]}</div></div><strong class="todo-count">${item[3]}</strong></div>`).join('')}</div></section>
+      </div>`;
+
+    const analysisViewState = { channel: 'mini', period: '本月' };
+    let currentView = 'dashboard';
+
+    const analysisTabs = () => [
+      { key: 'mini', label: '小程序商城客户', desc: '积分消费 · 采购履约 · 企业结算', count: '28 家' },
+      { key: 'api', label: 'API 供货客户', desc: '人民币订单 · 客户回款 · 上游校对', count: '10 家' }
+    ].map(tab => `<button class="analysis-tab ${analysisViewState.channel === tab.key ? 'active' : ''}" type="button" role="tab" aria-selected="${analysisViewState.channel === tab.key}" data-analysis-tab="${tab.key}"><span><strong>${tab.label}</strong><small>${tab.desc}</small></span><b>${tab.count}</b></button>`).join('');
+
+    const analysisData = {
+      mini: {
+        tabLabel: '小程序商城客户',
+        badge: '小程序商城渠道', badgeClass: '',
+        desc: '只统计小程序客户的积分消费、采购履约与企业结算数据',
+        kpis: [['有效订单','2,386 单','↑ 9.6% 较上期','var(--brand)'],['结算金额','¥ 684,260','订单动态结算价汇总','var(--success)'],['消费积分','68,426,000','含已扣减积分','var(--warning)'],['冻结积分','1,286,000','对应处理中订单','var(--danger)'],['采购成本','¥ 510,320','集采与自营合计','var(--brand)'],['预计毛利','¥ 173,940','毛利率 25.4%','var(--success)'],['待企业结算','¥ 82,300','后结企业 4 家','var(--warning)'],['积分充值','¥ 426,000','预付企业本期入账','var(--brand)']],
+        orderSteps: [['提交订单','2,463 单','起始订单'],['采购成功','2,386 单','成功率 96.9%'],['履约完成','2,206 单','待履约 180 单'],['订单完成','2,118 单','已结算 96.0%']],
+        fundSteps: [['积分冻结','2,451 单','128.6w 积分'],['积分扣减 / 采购支出','¥ 510,320','2,318 单已扣减'],['企业结算出账','¥ 601,960','以订单快照计价'],['预付入账 / 后结待回款','¥ 82,300','4 家企业待跟进']],
+        connections: ['提交时冻结','采购后扣减','完成后出账','预付/后结分流'],
+        exceptions: ['12 单已提交但未冻结','68 单已采购但未扣减','后结待回款 ¥ 82,300'],
+        productHeads: ['排名','商品','平台两级分类','销量','消费积分','结算金额','采购成本'],
+        productRows: [['1','A4 复印纸 70g 5包装','办公用品 / 纸品','836','8,694,400','¥ 86,944','¥ 66,880'],['2','多功能商务双肩包','商务箱包 / 双肩包','526','8,889,400','¥ 88,894','¥ 65,750'],['3','不锈钢保温杯 500ml','生活日用 / 水杯','482','4,289,800','¥ 42,898','¥ 31,330'],['4','无线蓝牙键盘 K3','数码家电 / 键鼠','329','7,830,200','¥ 78,302','¥ 57,904']],
+        enterpriseHeads: ['排名','企业','结算方式','订单数','消费积分','结算金额','待结算','贡献占比'],
+        enterpriseRows: [['1','长沙星河科技','积分预付','824','22,486,000','¥ 224,860','¥ 0','32.9%'],['2','云杉数字服务','积分后结','632','18,930,000','¥ 189,300','¥ 42,300','27.7%'],['3','智合企业服务','积分后结','486','13,668,000','¥ 136,680','¥ 40,000','20.0%'],['4','南方人力资源','积分预付','298','7,241,000','¥ 72,410','¥ 0','10.6%']]
+      },
+      api: {
+        tabLabel: 'API 供货客户',
+        badge: 'API供货渠道', badgeClass: 'api',
+        desc: '只统计 API 客户订单、采购成本、人民币结算与上游余额校对数据',
+        kpis: [['受理订单','1,460 单','↑ 6.3% 较上期','var(--brand)'],['订单金额','¥ 600,370','客户结算金额','var(--success)'],['采购成本','¥ 468,100','上游采购金额','var(--warning)'],['采购成功率','97.8%','失败 32 单','var(--danger)'],['预计毛利','¥ 132,270','毛利率 22.0%','var(--success)'],['客户待回款','¥ 186,600','月结客户 5 家','var(--warning)'],['上游账户余额','¥ 268,780','最近查询 14:28','var(--brand)'],['余额差异','¥ 120','待核对 2 笔','var(--danger)']],
+        orderSteps: [['API 订单受理','1,492 单','起始受理'],['上游采购成功','1,460 单','成功率 97.8%'],['履约完成','1,386 单','待履约 74 单'],['订单完成','1,302 单','完成率 87.3%']],
+        fundSteps: [['余额/授信占用','¥ 600,370','按客户结算模式'],['上游采购支出','¥ 468,100','订单实际成本'],['客户结算出账','¥ 600,370','以订单快照计价'],['客户回款 / 上游余额校对','¥ 413,770','待回款 ¥ 186,600']],
+        connections: ['受理时占用','采购成功后支出','完成后出账','回款与余额校对'],
+        exceptions: ['32 单采购失败或待重试','客户待回款 ¥ 186,600','上游余额差异 ¥ 120'],
+        productHeads: ['排名','商品','平台两级分类','销量','订单金额','采购成本','采购成功率'],
+        productRows: [['1','A4 复印纸 70g 5包装','办公用品 / 纸品','618','¥ 74,160','¥ 58,710','99.2%'],['2','无线蓝牙键盘 K3','数码家电 / 键鼠','392','¥ 93,296','¥ 68,992','98.7%'],['3','便携充电宝 10000mAh','数码家电 / 电源','306','¥ 39,474','¥ 29,376','96.1%'],['4','多功能商务双肩包','商务箱包 / 双肩包','284','¥ 47,996','¥ 35,500','97.5%']],
+        enterpriseHeads: ['排名','API客户','结算方式','订单数','订单金额','采购成本','待回款','贡献占比'],
+        enterpriseRows: [['1','城际商业管理','人民币月结','486','¥ 198,620','¥ 153,910','¥ 86,900','33.1%'],['2','恒跃员工福利','人民币预存','392','¥ 162,400','¥ 126,320','¥ 0','27.1%'],['3','远见企业服务','人民币月结','318','¥ 130,360','¥ 101,680','¥ 61,400','21.7%'],['4','启辰数字科技','人民币月结','198','¥ 78,210','¥ 61,110','¥ 38,300','13.0%']]
+      }
+    };
+
+    const dataTable = (heads, tableRows) => `<div style="overflow:auto"><table class="data-table"><thead><tr>${heads.map(head=>`<th>${head}</th>`).join('')}</tr></thead><tbody>${tableRows.map(row=>`<tr>${row.map((cell,index)=>`<td class="${String(cell).includes('¥')||String(cell).includes('积分')?'money':''}">${index===1?`<button class="link" onclick="toast('已打开 ${cell} 明细')">${cell}</button>`:cell}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+
+    const flowNodes = (steps, laneClass) => `<div class="flow-lane ${laneClass}">${steps.map((step,index)=>`<article class="flow-node ${index===steps.length-1?'terminal':''}"><span>${step[0]}</span><strong>${step[1]}</strong><small>${step[2]}</small></article>`).join('')}</div>`;
+
+    const dualTrackFlow = item => `<section class="flow-panel" data-dual-track-flow aria-label="订单与资金结算闭环"><div class="flow-head"><strong>订单与资金结算闭环</strong><span>订单阶段与资金结果逐阶段对应</span><small>更新于 08-14 14:32</small></div><div class="flow-body"><div class="flow-legend"><span><i></i>订单节点</span><span><i></i>资金节点</span><span><i></i>异常 / 待办</span></div><div class="flow-label">ORDER FLOW · 订单流</div>${flowNodes(item.orderSteps,'order-lane')}<div class="flow-connections">${item.connections.map(connection=>`<div><i></i><span>${connection}</span></div>`).join('')}</div><div class="flow-label">SETTLEMENT FLOW · 资金流</div>${flowNodes(item.fundSteps,'fund-lane')}<div class="flow-exceptions"><strong>重点异常</strong><span>${item.exceptions.join(' · ')}</span></div></div></section>`;
+
+    const channelAnalysisOverview = item => `<div class="analysis-overview"><section class="analysis-metric-panel"><div class="analysis-section-head"><strong>核心指标</strong><span>8 项 · ${analysisViewState.period}</span></div><div class="analysis-metrics">${item.kpis.map(kpi=>`<article class="analysis-metric" style="--metric-tone:${kpi[3]}"><span>${kpi[0]}</span><strong>${kpi[1]}</strong><small>${kpi[2]}</small></article>`).join('')}</div></section>${dualTrackFlow(item)}</div>`;
+
+    function channelAnalysisPage() {
+      const item = analysisData[analysisViewState.channel];
+      const periodOptions = ['本月', '本周', '今天'].map(period => `<option ${analysisViewState.period === period ? 'selected' : ''}>${period}</option>`).join('');
+      return `<div class="analysis-tabs" role="tablist" aria-label="企业客户类型">${analysisTabs()}</div>
+        <div class="page-head"><p class="page-desc">${item.desc}</p><div class="page-actions"><select class="field" data-analysis-period>${periodOptions}</select><button class="btn" data-analysis-export>${icon('i-download')}导出报表</button></div></div>
+        ${channelAnalysisOverview(item)}
+        <section class="panel report-section"><div class="report-head"><span class="report-title">商品销量排行</span><span class="report-note">按订单商品聚合</span><button class="panel-more" onclick="toast('已导出商品排行')">导出</button></div>${dataTable(item.productHeads,item.productRows)}</section>
+        <section class="panel report-section"><div class="report-head"><span class="report-title">企业贡献排行</span><span class="report-note">仅汇总企业层，不下钻终端用户</span><button class="panel-more" onclick="toast('已导出企业排行')">导出</button></div>${dataTable(item.enterpriseHeads,item.enterpriseRows)}</section>`;
+    }
+
+    const rows = {
+      'mini-enterprises': [
+        ['ENT-M018','长沙星河科技有限公司','积分预付','4 个一级分类','12%','已配置 8 条企业分类加价','286,400','已启用'],
+        ['ENT-M017','云杉数字服务有限公司','积分后结','3 个一级分类','15%','已配置 5 条企业分类加价','168,200','已启用'],
+        ['ENT-M015','智合企业服务有限公司','积分后结','5 个一级分类','12%','使用企业默认兜底比例','92,600','待配置'],
+        ['ENT-M014','南方人力资源有限公司','积分预付','2 个一级分类','10%','已配置 3 条企业分类加价','36,800','已停用']
+      ],
+      'mini-orders': [
+        ['MP202608140184','长沙星河科技','多功能商务双肩包','16,900 积分','¥ 169.00','¥ 125.00','待发货','已受理'],
+        ['MP202608140182','云杉数字服务','不锈钢保温杯','8,900 积分','¥ 89.00','¥ 65.00','处理中','结果未知'],
+        ['MP202608140180','南方人力资源','便携充电宝','12,900 积分','¥ 129.00','¥ 96.00','售后中','退款处理中'],
+        ['MP202608140176','长沙星河科技','A4 复印纸 70g','12,000 积分','¥ 120.00','¥ 80.00','已完成','已结算']
+      ],
+      'points-accounts': [
+        ['ACC-M018','长沙星河科技','积分预付','286,400','12,800','¥ 2,864.00','08-14 14:26','正常'],
+        ['ACC-M017','云杉数字服务','积分后结','168,200','25,600','¥ 1,682.00','08-14 14:18','正常'],
+        ['ACC-M015','智合企业服务','积分后结','92,600','16,900','¥ 926.00','08-14 13:56','额度不足'],
+        ['ACC-M014','南方人力资源','积分预付','36,800','0','¥ 368.00','08-14 13:42','已冻结']
+      ],
+      'api-clients': [
+        ['ENT-A016','城际商业管理有限公司','人民币月结','已鉴权','6 个开放分类','15% 企业默认兜底比例','¥ 120,000','已启用'],
+        ['ENT-A013','恒跃员工福利有限公司','人民币预存','已鉴权','4 个开放分类','已配置 6 条企业分类加价','¥ 86,400','已启用'],
+        ['ENT-A011','远见企业服务有限公司','人民币月结','已鉴权','5 个开放分类','12% 企业默认兜底比例','¥ 80,000','已启用'],
+        ['ENT-A008','启辰数字科技有限公司','人民币月结','待联调','3 个开放分类','待配置企业分类加价','¥ 50,000','待配置']
+      ],
+      'api-orders': [
+        ['API202608140183','城际商业管理','A4复印纸 2箱','¥ 236.00','¥ 198.00','¥ 38.00','已发货','已受理'],
+        ['API202608140181','恒跃员工福利','无线蓝牙键盘 K3','¥ 238.00','¥ 186.00','¥ 52.00','已完成','已结算'],
+        ['API202608140177','远见企业服务','多功能商务双肩包','¥ 169.00','¥ 125.00','¥ 44.00','处理中','结果未知'],
+        ['API202608140172','启辰数字科技','便携充电宝','¥ 129.00','¥ 96.00','¥ 33.00','采购失败','待重试']
+      ],
+      'api-reconciliation': [
+        ['REC20260814-01','京选集采','08-14 14:28','¥ 268,780.00','¥ 268,660.00','¥ 120.00','2 笔订单待核对','存在差异'],
+        ['REC20260814-02','企采云','08-14 14:24','¥ 186,420.00','¥ 186,420.00','¥ 0.00','订单统计一致','一致'],
+        ['REC20260814-03','华采供应链','08-14 14:16','¥ 92,680.00','¥ 92,680.00','¥ 0.00','订单统计一致','一致'],
+        ['REC20260813-04','京选集采','08-13 23:58','¥ 301,620.00','¥ 301,620.00','¥ 0.00','日终校对完成','已完成']
+      ],
+      products: [
+        { categoryId: 'daily-cups', parentCategoryId: 'daily', cells: ['SPU-10283','不锈钢保温杯 500ml','生活日用 / 水杯壶具','4','自营','平台自营','¥ 65.00','18','紧张'] },
+        { categoryId: 'bags-backpack', parentCategoryId: 'bags', cells: ['SPU-10286','多功能商务双肩包','商务箱包 / 双肩包','3','集采','京选集采','¥ 125.00','126','正常'] },
+        { categoryId: 'office-consumables', parentCategoryId: 'office', cells: ['SPU-10285','A4 复印纸 70g 5包装','办公用品 / 办公耗材','1','集采','京选集采','¥ 80.00','568','充足'] },
+        { categoryId: 'digital-keyboard', parentCategoryId: 'digital', cells: ['SPU-10284','无线蓝牙键盘 K3','数码家电 / 键鼠外设','2','集采','企采云','¥ 176.00','83','正常'] },
+        { categoryId: 'digital-power', parentCategoryId: 'digital', cells: ['SPU-10282','便携充电宝 10000mAh','数码家电 / 移动电源','3','自营','平台自营','¥ 96.00','0','无货'] }
+      ]
+    };
+
+    const meta = {
+      'mini-enterprises': ['小程序客户','仅管理创建时固定为小程序商城渠道的客户',['企业编码','企业名称','结算方式','开放商品分类','企业默认兜底比例','企业分类加价','可用积分','状态'],'新建小程序客户'],
+      'mini-orders': ['商城订单','查看积分兑换订单的冻结、采购、履约与结算状态',['订单号','企业','商品','消费积分','结算金额','采购成本','订单状态','采购结果'],'导出商城订单'],
+      'points-accounts': ['积分对账','按企业汇总积分充值、消费、冻结与账户余额，核对订单积分结果',['账户编号','企业','结算方式','可用积分','冻结积分','人民币等值','最近变动','状态'],'登记积分充值'],
+      'api-clients': ['API客户','仅管理创建时固定为 API 供货渠道的客户与接入配置',['企业编码','企业名称','结算方式','API状态','开放商品分类','定价配置','授信/预存余额','状态'],'新建API客户'],
+      'api-orders': ['API订单','查看 API 客户订单的上游采购、履约和人民币结算',['订单号','API客户','商品','结算金额','采购成本','预计毛利','订单状态','采购结果'],'导出API订单'],
+      'api-reconciliation': ['资金对账','按供货平台汇总订单采购金额，并调用余额查询接口做最简单的余额校对',['对账编号','供货平台','查询时间','接口余额','账面余额','余额差异','订单统计结果','状态'],'立即校对'],
+      products: ['商品管理','统一维护自营商品和已归集到平台商品库的集采商品；未归集来源商品在供货平台内处理',['商品编码','商品名称','平台分类','SKU数','商品来源','来源平台','成本价/采购价','库存','状态','操作'],'新建自营商品']
+    };
+
+    const reconciliationKpis = [
+      ['本月采购金额', '¥1,246,580.00', '已覆盖 3 个供货平台', 'brand'],
+      ['本月退款与调整', '¥32,460.00', '退款 16 笔 · 调账 2 笔', 'warning'],
+      ['当前接口余额', '¥547,880.00', '最近校对 08-15 14:28', 'success'],
+      ['当前账面余额', '¥547,760.00', '按理论余额公式计算', 'brand'],
+      ['本月累计差异', '¥120.00', '1 个平台存在差异', 'danger'],
+      ['待核对订单', '2 笔', '最长待处理 2 小时 18 分', 'danger']
+    ];
+
+    const pointsReconciliationKpis = [
+      ['本月积分充值', '42,600,000 积分', '18 家企业 · 46 笔充值', 'brand'],
+      ['本月积分消费', '68,426,000 积分', '2,318 笔订单已扣减', 'success'],
+      ['当前可用积分', '13,180,000 积分', '28 个账户 · 更新于 14:28', 'brand'],
+      ['当前冻结积分', '1,286,000 积分', '对应 68 笔处理中订单', 'warning'],
+      ['本月累计差异', '12,000 积分', '2 笔差异尚未解决', 'danger'],
+      ['待核对订单', '3 笔', '最长待处理 1 小时 36 分', 'danger']
+    ];
+
+    function reconciliationKpiBoard(kpis, ariaLabel, marker = '') {
+      const cards = kpis.map(([label, value, note, tone]) => `<article class="reconciliation-kpi tone-${tone}" data-reconciliation-kpi><span>${label}</span><strong data-reconciliation-kpi-value>${value}</strong><small data-reconciliation-kpi-note>${note}</small></article>`).join('');
+      return `<section class="reconciliation-kpis" data-reconciliation-kpis ${marker} aria-label="${ariaLabel}">${cards}</section>`;
+    }
+
+    const orderStatusOptions = [
+      ['ALL','全部'],
+      ['PENDING','待处理'],
+      ['TO_SHIP','待发货'],
+      ['SHIPPED','已发货'],
+      ['COMPLETED','已完成'],
+      ['AFTER_SALE_OR_EXCEPTION','售后/异常']
+    ];
+    const orderViewStates = {
+      'mini-orders': { aggregateStatus: 'ALL', keyword: '' },
+      'api-orders': { aggregateStatus: 'ALL', keyword: '' }
+    };
+    const orderActionState = { view: '', orderId: '', action: '' };
+
+    function findOrderRow(view, orderId) {
+      return rows[view]?.find(row => row[0] === orderId);
+    }
+
+    function getOrderActionModel(row) {
+      const detailAction = { action: 'detail', label: '查看详情' };
+      const orderStatus = String(row[6]);
+      const purchaseResult = String(row[7]);
+      const combinedStatus = `${orderStatus} ${purchaseResult}`;
+      if (['退款中','退款处理中','售后中'].some(keyword => combinedStatus.includes(keyword))) {
+        return [detailAction, { action: 'refund', label: '退款处理中', disabled: true, danger: true }];
+      }
+      if (['已取消','已关闭'].some(keyword => combinedStatus.includes(keyword))) return [detailAction];
+      if (['采购失败','待重试'].some(keyword => combinedStatus.includes(keyword))) {
+        return [detailAction, { action: 'close', label: '关闭订单', danger: true }];
+      }
+      if (orderStatus.includes('待付款')) return [detailAction, { action: 'close', label: '关闭订单', danger: true }];
+      if (orderStatus.includes('待发货')) {
+        return [detailAction, { action: 'ship', label: '发货' }, { action: 'refund', label: '退款', danger: true }];
+      }
+      if (orderStatus.includes('已发货') || orderStatus.includes('已完成')) {
+        return [detailAction, { action: 'refund', label: '退款', danger: true }];
+      }
+      return [detailAction];
+    }
+
+    function renderOrderActions(view, row) {
+      const actions = getOrderActionModel(row).map(item => `<button class="link ${item.danger ? 'danger-link' : ''}" data-order-action="${item.action}" data-order-view="${view}" data-order-id="${row[0]}" ${item.disabled ? 'disabled' : ''}>${item.label}</button>`).join('');
+      return `<div class="order-actions" data-order-actions>${actions}</div>`;
+    }
+
+    function renderOrderActionModal() {
+      return `<div class="modal-backdrop" data-order-action-modal hidden><section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="orderActionTitle"><div class="modal-head"><span class="modal-title" id="orderActionTitle" data-order-action-title>订单操作</span><button class="modal-close" data-order-action-close aria-label="关闭">×</button></div><div class="modal-form" data-order-action-body></div><div class="order-action-error" data-order-action-error hidden></div><div class="modal-actions"><button class="btn" data-order-action-close>取消</button><button class="btn primary" data-order-action-submit>确认</button></div></section></div>`;
+    }
+
+    function openOrderActionModal(action, view, orderId) {
+      const row = findOrderRow(view, orderId);
+      const modal = document.querySelector('[data-order-action-modal]');
+      if (!row || !modal) return;
+      Object.assign(orderActionState, { view, orderId, action });
+      const channelLabel = view === 'mini-orders' ? '商城订单' : 'API 订单';
+      const amountLabel = view === 'mini-orders' ? '消费积分 / 结算金额' : '结算金额';
+      const amountValue = view === 'mini-orders' ? `${row[3]} / ${row[4]}` : row[3];
+      const costValue = view === 'mini-orders' ? row[5] : row[4];
+      const body = modal.querySelector('[data-order-action-body]');
+      const title = modal.querySelector('[data-order-action-title]');
+      const submit = modal.querySelector('[data-order-action-submit]');
+      const footerClose = modal.querySelector('.modal-actions [data-order-action-close]');
+      const error = modal.querySelector('[data-order-action-error]');
+      error.hidden = true;
+      error.textContent = '';
+      submit.hidden = action === 'detail';
+      footerClose.textContent = action === 'detail' ? '关闭' : '取消';
+      if (action === 'detail') {
+        title.textContent = '查看订单详情';
+        body.innerHTML = `<div class="modal-field"><label>订单号</label><strong>${escapeHtml(row[0])}</strong></div><div class="modal-field"><label>渠道类型</label><strong>${channelLabel}</strong></div><div class="modal-field"><label>企业</label><strong>${escapeHtml(row[1])}</strong></div><div class="modal-field"><label>商品</label><strong>${escapeHtml(row[2])}</strong></div><div class="modal-field"><label>${amountLabel}</label><strong>${escapeHtml(amountValue)}</strong></div><div class="modal-field"><label>采购成本</label><strong>${escapeHtml(costValue)}</strong></div><div class="modal-field"><label>订单状态</label><strong>${escapeHtml(row[6])}</strong></div><div class="modal-field"><label>采购结果</label><strong>${escapeHtml(row[7])}</strong></div>`;
+      } else if (action === 'ship') {
+        title.textContent = '订单发货';
+        submit.textContent = '确认发货';
+        body.innerHTML = `<div class="modal-field full"><label>订单</label><strong>${escapeHtml(row[0])} · ${escapeHtml(row[2])}</strong></div><div class="modal-field"><label>物流公司</label><select class="field" data-order-logistics-company><option value="">请选择物流公司</option><option>顺丰速运</option><option>京东物流</option><option>中通快递</option></select></div><div class="modal-field"><label>物流单号</label><input class="field" data-order-tracking-number placeholder="请输入物流单号"></div><div class="modal-field full"><div class="order-action-note">确认后订单进入“已发货”，列表将立即更新发货状态和可执行操作。</div></div>`;
+      } else if (action === 'refund') {
+        const refundPath = view === 'mini-orders' ? '按原积分及支付路径退回' : '按原人民币结算路径退回';
+        title.textContent = '发起订单退款';
+        submit.textContent = '确认退款';
+        body.innerHTML = `<div class="modal-field"><label>订单号</label><strong>${escapeHtml(row[0])}</strong></div><div class="modal-field"><label>退款范围</label><strong>${escapeHtml(amountValue)}</strong></div><div class="modal-field full"><div class="order-action-note"><strong>${refundPath}</strong><br>当前静态原型只演示操作反馈，不调用真实退款接口。</div></div><div class="modal-field full"><label>退款原因</label><textarea class="field" data-order-refund-reason style="height:82px;padding-top:9px;resize:vertical" placeholder="请填写退款原因"></textarea></div><div class="modal-field full"><label class="order-confirmation"><input type="checkbox" data-order-action-confirm>我已核对退款范围和原路退回影响</label></div>`;
+      } else if (action === 'close') {
+        title.textContent = '关闭订单';
+        submit.textContent = '确认关闭';
+        body.innerHTML = `<div class="modal-field full"><label>订单</label><strong>${escapeHtml(row[0])} · ${escapeHtml(row[2])}</strong></div><div class="modal-field full"><label>关闭原因</label><select class="field" data-order-close-reason><option value="">请选择关闭原因</option><option>采购失败不再重试</option><option>客户主动取消</option><option>超时未付款</option></select></div><div class="modal-field full"><label class="order-confirmation"><input type="checkbox" data-order-action-confirm>我确认关闭后订单不可继续发货</label></div>`;
+      }
+      modal.hidden = false;
+    }
+
+    function closeOrderActionModal() {
+      const modal = document.querySelector('[data-order-action-modal]');
+      if (modal) modal.hidden = true;
+      Object.assign(orderActionState, { view: '', orderId: '', action: '' });
+    }
+
+    function submitOrderAction() {
+      const { view, orderId, action } = orderActionState;
+      const row = findOrderRow(view, orderId);
+      const modal = document.querySelector('[data-order-action-modal]');
+      if (!row || !modal || !action) return;
+      const error = modal.querySelector('[data-order-action-error]');
+      const showError = message => {
+        error.textContent = message;
+        error.hidden = false;
+      };
+      const availableAction = getOrderActionModel(row).find(item => item.action === action && !item.disabled);
+      if (!availableAction) return showError('当前订单状态已变化，请刷新后重试');
+      if (action === 'ship') {
+        if (!modal.querySelector('[data-order-logistics-company]').value) return showError('请选择物流公司');
+        if (!modal.querySelector('[data-order-tracking-number]').value.trim()) return showError('请输入物流单号');
+        row[6] = '已发货';
+        row[7] = '已受理';
+      } else if (action === 'refund') {
+        if (!modal.querySelector('[data-order-refund-reason]').value.trim()) return showError('请填写退款原因');
+        if (!modal.querySelector('[data-order-action-confirm]').checked) return showError('请确认退款影响');
+        row[6] = '退款中';
+        row[7] = '退款处理中';
+      } else if (action === 'close') {
+        if (!modal.querySelector('[data-order-close-reason]').value) return showError('请选择关闭原因');
+        if (!modal.querySelector('[data-order-action-confirm]').checked) return showError('请确认关闭订单');
+        row[6] = '已取消';
+        row[7] = '已关闭';
+      }
+      const actionLabel = action === 'ship' ? '发货' : action === 'refund' ? '退款' : '关闭订单';
+      modal.hidden = true;
+      Object.assign(orderActionState, { view: '', orderId: '', action: '' });
+      render(view);
+      toast(`${orderId} ${actionLabel}操作已更新`);
+    }
+
+    function getAggregateOrderStatus(row) {
+      const orderStatus = String(row[6]);
+      const purchaseResult = String(row[7]);
+      const combinedStatus = `${orderStatus} ${purchaseResult}`;
+      if (orderStatus.includes('已取消') || purchaseResult.includes('已关闭')) return 'CANCELLED';
+      if (['售后','退款','采购失败','待重试','失败'].some(keyword => combinedStatus.includes(keyword))) return 'AFTER_SALE_OR_EXCEPTION';
+      if (['处理中','结果未知','待确认'].some(keyword => combinedStatus.includes(keyword))) return 'PENDING';
+      if (orderStatus.includes('待发货')) return 'TO_SHIP';
+      if (orderStatus.includes('已发货')) return 'SHIPPED';
+      if (orderStatus.includes('已完成')) return 'COMPLETED';
+      return 'PENDING';
+    }
+
+    function orderListPage(view) {
+      const [, desc, heads, action] = meta[view];
+      const state = orderViewStates[view];
+      const keyword = state.keyword.toLowerCase();
+      const keywordRows = rows[view].filter(row => !keyword || row.join(' ').toLowerCase().includes(keyword));
+      const counts = Object.fromEntries(orderStatusOptions.map(([status]) => [
+        status,
+        status === 'ALL' ? keywordRows.length : keywordRows.filter(row => getAggregateOrderStatus(row) === status).length
+      ]));
+      const filteredRows = state.aggregateStatus === 'ALL'
+        ? keywordRows
+        : keywordRows.filter(row => getAggregateOrderStatus(row) === state.aggregateStatus);
+      const body = filteredRows.length
+        ? filteredRows.map(row => `<tr data-order-row="${row[0]}">${row.map((cell,index) => {
+            const value = index === 0
+              ? `<button class="link" onclick="toast('已打开 ${cell} 详情')">${cell}</button>`
+              : index >= 6 ? tag(cell,toneFor(cell)) : cell;
+            const stateMarker = index === 6 ? ' data-order-status' : index === 7 ? ' data-order-purchase-result' : '';
+            return `<td class="${String(cell).includes('¥')||String(cell).includes('积分')?'money':''}"${stateMarker}>${value}</td>`;
+          }).join('')}<td>${renderOrderActions(view, row)}</td></tr>`).join('')
+        : `<tr><td colspan="${heads.length + 1}" class="muted" style="height:96px;text-align:center">当前条件下暂无订单</td></tr>`;
+      const tabs = orderStatusOptions.map(([status, label]) => `<button class="quick-tab ${state.aggregateStatus === status ? 'active' : ''}" data-order-status-tab="${status}">${label}<span class="quick-tab-count" data-order-count>${counts[status]}</span></button>`).join('');
+      return `<div class="page-head"><p class="page-desc">${desc}</p><div class="page-actions"><button class="btn" onclick="toast('${action}已生成')">${icon('i-download')}${action}</button></div></div>
+        <div class="quick-tabs" data-order-status-tabs>${tabs}</div>
+        ${queryToolbar(`<input class="field search" data-order-keyword value="${escapeHtml(state.keyword)}" placeholder="搜索订单号、客户或商品">`)}
+        <section class="table-card"><div style="overflow:auto"><table class="data-table order-table"><thead><tr>${[...heads,'操作'].map(head=>`<th>${head}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>${pagination(String(filteredRows.length))}</section>${renderOrderActionModal()}`;
+    }
+
+    function listPage(view) {
+      const [, desc, heads, action] = meta[view];
+      const body = rows[view].map(row=>`<tr>${row.map((cell,index)=>{
+        const value = index===row.length-1 ? tag(cell,toneFor(cell)) : index===0 ? `<button class="link" onclick="toast('已打开 ${cell} 详情')">${cell}</button>` : cell;
+        return `<td class="${String(cell).includes('¥')||String(cell).includes('积分')?'money':''}">${value}</td>`;
+      }).join('')}</tr>`).join('');
+      const productRule = view==='products' ? `<button class="btn" onclick="toast('已打开平台兜底加价配置')">平台兜底加价</button>` : '';
+      const reconciliationOverview = view === 'api-reconciliation'
+        ? reconciliationKpiBoard(reconciliationKpis, '资金对账关键指标')
+        : view === 'points-accounts'
+          ? reconciliationKpiBoard(pointsReconciliationKpis, '积分对账关键指标', 'data-points-reconciliation-kpis')
+          : '';
+      return `<div class="page-head"><p class="page-desc">${desc}</p><div class="page-actions">${productRule}<button class="btn">${icon('i-download')}导出</button><button class="btn primary" onclick="toast('${action}操作已开启')">${icon('i-plus')}${action}</button></div></div>
+        ${reconciliationOverview}
+        ${queryToolbar('<input class="field search" placeholder="搜索名称、编码或关键字"><select class="field"><option>全部状态</option><option>正常</option><option>待处理</option></select>')}
+        <section class="table-card"><div style="overflow:auto"><table class="data-table"><thead><tr>${heads.map(head=>`<th>${head}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>${pagination()}</section>`;
+    }
+
+    const adminMenuTree = [
+      { code: 'analytics', name: '经营看板', children: [
+        { code: 'dashboard', name: '经营总览' },
+        { code: 'channel-analysis', name: '渠道经营分析' }
+      ] },
+      { code: 'miniapp', name: '小程序商城客户', children: [
+        { code: 'mini-enterprises', name: '小程序客户' },
+        { code: 'mini-orders', name: '商城订单' },
+        { code: 'points-accounts', name: '积分对账' }
+      ] },
+      { code: 'api', name: 'API供货客户', children: [
+        { code: 'api-clients', name: 'API客户' },
+        { code: 'api-orders', name: 'API订单' },
+        { code: 'api-reconciliation', name: '资金对账' }
+      ] },
+      { code: 'catalog', name: '商品库', children: [
+        { code: 'category', name: '分类管理' },
+        { code: 'products', name: '商品管理' }
+      ] },
+      { code: 'supply', name: '供货平台管理', children: [
+        { code: 'suppliers', name: '供货平台' },
+        { code: 'category-mapping', name: '分类映射' }
+      ] },
+      { code: 'system', name: '系统管理', children: [
+        { code: 'system-users', name: '用户管理' },
+        { code: 'system-roles', name: '角色权限' },
+        { code: 'system-api-docs', name: 'API文档' }
+      ] }
+    ];
+
+    const systemRoles = [
+      { id: 'ROLE-SUPER', name: '超级管理员', description: '拥有全部后台菜单', status: '启用', isSuperAdmin: true, menuCodes: ['*'], updatedAt: '08-14 15:20' },
+      { id: 'ROLE-MALL', name: '商城运营', description: '负责小程序客户、商城订单与积分对账', status: '启用', isSuperAdmin: false, menuCodes: ['dashboard','channel-analysis','mini-enterprises','mini-orders','points-accounts'], updatedAt: '08-14 14:56' },
+      { id: 'ROLE-OPS', name: '供货运营', description: '负责 API 客户、订单、平台商品与供货平台', status: '启用', isSuperAdmin: false, menuCodes: ['dashboard','channel-analysis','api-clients','api-orders','api-reconciliation','products','suppliers','category-mapping'], updatedAt: '08-14 16:20' }
+    ];
+
+    const systemUsers = [
+      { id: 'USR-001', name: '平台管理员', loginName: 'admin', mobile: '13800000001', roleId: 'ROLE-SUPER', status: '启用', lastLoginAt: '08-14 14:32', createdAt: '08-01 09:00' },
+      { id: 'USR-002', name: '商城运营', loginName: 'mall_ops', mobile: '13800000002', roleId: 'ROLE-MALL', status: '启用', lastLoginAt: '08-14 13:58', createdAt: '08-05 10:20' },
+      { id: 'USR-003', name: '供货运营', loginName: 'supply_ops', mobile: '13800000003', roleId: 'ROLE-OPS', status: '停用', lastLoginAt: '08-12 17:26', createdAt: '08-06 11:10' }
+    ];
+
+    const userViewState = { keyword: '', roleId: 'ALL', status: 'ALL' };
+    const roleViewState = { keyword: '', status: 'ALL' };
+    const findSystemRole = roleId => systemRoles.find(role => role.id === roleId);
+    const maskMobile = mobile => mobile ? `${mobile.slice(0,3)}****${mobile.slice(-4)}` : '—';
+
+    function systemUsersPage() {
+      const roleOptions = [`<option value="ALL">全部角色</option>`, ...systemRoles.map(role => `<option value="${role.id}" ${userViewState.roleId === role.id ? 'selected' : ''}>${role.name}</option>`)].join('');
+      const statusOptions = [['ALL','全部状态'],['启用','启用'],['停用','停用']].map(([value,label]) => `<option value="${value}" ${userViewState.status === value ? 'selected' : ''}>${label}</option>`).join('');
+      const keyword = userViewState.keyword.toLowerCase();
+      const filteredUsers = systemUsers.filter(user => {
+        const matchesKeyword = !keyword || `${user.name} ${user.loginName} ${user.mobile}`.toLowerCase().includes(keyword);
+        return matchesKeyword && (userViewState.roleId === 'ALL' || user.roleId === userViewState.roleId) && (userViewState.status === 'ALL' || user.status === userViewState.status);
+      });
+      const rowsHtml = filteredUsers.map(user => {
+        const role = findSystemRole(user.roleId);
+        const isProtected = role?.isSuperAdmin;
+        return `<tr data-user-row="${user.id}"><td><div class="person-cell"><span class="person-mark">${user.name.slice(0,1)}</span><div><div class="person-name">${user.name}</div><div class="person-id">${user.id}</div></div></div></td><td>${user.loginName}</td><td>${maskMobile(user.mobile)}</td><td>${role?.isSuperAdmin ? tag(role.name,'info') : role?.name || '未分配'}</td><td>${tag(user.status,toneFor(user.status))}</td><td>${user.lastLoginAt}</td><td>${user.createdAt}</td><td><div class="row-actions"><button class="link" data-user-edit="${user.id}">编辑</button>${isProtected ? '' : `<button class="link" data-user-status="${user.id}">${user.status === '启用' ? '停用' : '启用'}</button>`}<button class="link" data-user-reset-password="${user.id}">重置密码</button></div></td></tr>`;
+      }).join('');
+      const activeRoleOptions = systemRoles.filter(role => role.status === '启用').map(role => `<option value="${role.id}">${role.name}</option>`).join('');
+      return `<div class="page-head"><p class="page-desc">仅管理拾马商城平台内部后台账号，不包含小程序客户与 API 客户账号</p><div class="page-actions"><button class="btn primary" data-user-add>${icon('i-plus')}新建用户</button></div></div>
+        ${queryToolbar(`<input class="field search" data-user-keyword value="${escapeHtml(userViewState.keyword)}" placeholder="搜索用户姓名或登录账号"><select class="field" data-user-role-filter>${roleOptions}</select><select class="field" data-user-status-filter>${statusOptions}</select>`)}
+        <section class="table-card"><div style="overflow:auto"><table class="data-table"><thead><tr><th>用户姓名</th><th>登录账号</th><th>手机号</th><th>所属角色</th><th>状态</th><th>最后登录时间</th><th>创建时间</th><th>操作</th></tr></thead><tbody>${rowsHtml || `<tr><td colspan="8" class="muted" style="height:96px;text-align:center">当前条件下暂无后台用户</td></tr>`}</tbody></table></div>${pagination(String(filteredUsers.length))}</section>
+        <div class="modal-backdrop" data-user-modal hidden><section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="userModalTitle"><div class="modal-head"><span class="modal-title" id="userModalTitle" data-user-modal-title>新建用户</span><button class="modal-close" data-user-modal-close aria-label="关闭">×</button></div><div class="modal-form"><div class="modal-field"><label>用户姓名</label><input class="field" name="userName" placeholder="请输入用户姓名"></div><div class="modal-field"><label>登录账号</label><input class="field" name="userLoginName" placeholder="请输入唯一登录账号"></div><div class="modal-field"><label>手机号</label><input class="field" name="userMobile" placeholder="请输入手机号"></div><div class="modal-field"><label>所属角色</label><select class="field" name="userRole"><option value="">请选择角色</option>${activeRoleOptions}</select></div><div class="modal-field"><label data-user-password-label>初始密码</label><input class="field" name="userPassword" type="password" placeholder="请输入登录密码"></div><div class="modal-field"><label>状态</label><select class="field" name="userStatus"><option>启用</option><option>停用</option></select></div></div><div class="modal-actions"><button class="btn" data-user-modal-close>取消</button><button class="btn primary" data-user-save>保存用户</button></div></section></div>`;
+    }
+
+    function openUserEditor(userId = '') {
+      const modal = document.querySelector('[data-user-modal]');
+      if (!modal) return;
+      const user = systemUsers.find(item => item.id === userId);
+      const role = user ? findSystemRole(user.roleId) : null;
+      modal.dataset.userId = userId;
+      modal.querySelector('[data-user-modal-title]').textContent = user ? '编辑用户' : '新建用户';
+      modal.querySelector('[name="userName"]').value = user?.name || '';
+      modal.querySelector('[name="userLoginName"]').value = user?.loginName || '';
+      modal.querySelector('[name="userLoginName"]').disabled = Boolean(user);
+      modal.querySelector('[name="userMobile"]').value = user?.mobile || '';
+      modal.querySelector('[name="userRole"]').value = user?.roleId || '';
+      modal.querySelector('[name="userRole"]').disabled = Boolean(role?.isSuperAdmin);
+      modal.querySelector('[name="userPassword"]').value = '';
+      modal.querySelector('[data-user-password-label]').textContent = user ? '新密码（可选）' : '初始密码';
+      modal.querySelector('[name="userStatus"]').value = user?.status || '启用';
+      modal.querySelector('[name="userStatus"]').disabled = Boolean(role?.isSuperAdmin);
+      modal.hidden = false;
+      modal.querySelector('[name="userName"]').focus();
+    }
+
+    function closeUserEditor() {
+      const modal = document.querySelector('[data-user-modal]');
+      if (modal) modal.hidden = true;
+    }
+
+    function saveUserEditor() {
+      const modal = document.querySelector('[data-user-modal]');
+      if (!modal) return;
+      const existing = systemUsers.find(user => user.id === modal.dataset.userId);
+      const name = modal.querySelector('[name="userName"]').value.trim();
+      const loginName = modal.querySelector('[name="userLoginName"]').value.trim();
+      const mobile = modal.querySelector('[name="userMobile"]').value.trim();
+      const roleId = existing && findSystemRole(existing.roleId)?.isSuperAdmin ? existing.roleId : modal.querySelector('[name="userRole"]').value;
+      const status = existing && findSystemRole(existing.roleId)?.isSuperAdmin ? existing.status : modal.querySelector('[name="userStatus"]').value;
+      const password = modal.querySelector('[name="userPassword"]').value;
+      if (!name || !loginName || !roleId) return toast('请填写用户姓名、登录账号并选择角色');
+      if (!existing && !password) return toast('请设置初始密码');
+      if (mobile && !/^1\d{10}$/.test(mobile)) return toast('请输入正确的手机号');
+      if (systemUsers.some(user => user.id !== existing?.id && user.loginName === loginName)) return toast('登录账号已存在');
+      if (!findSystemRole(roleId) || findSystemRole(roleId).status !== '启用') return toast('请选择启用中的角色');
+      if (existing) Object.assign(existing, { name, mobile, roleId, status });
+      else systemUsers.push({ id: `USR-${String(systemUsers.length + 1).padStart(3,'0')}`, name, loginName, mobile, roleId, status, lastLoginAt: '从未登录', createdAt: '08-14 15:32' });
+      render('system-users');
+      toast(existing ? '用户信息已保存' : '用户已创建');
+    }
+
+    function toggleSystemUser(userId) {
+      const user = systemUsers.find(item => item.id === userId);
+      if (!user) return;
+      if (findSystemRole(user.roleId)?.isSuperAdmin && user.status === '启用') return toast('至少保留一个启用中的超级管理员');
+      user.status = user.status === '启用' ? '停用' : '启用';
+      render('system-users');
+      toast(`用户已${user.status}`);
+    }
+
+    function renderPermissionTree() {
+      return adminMenuTree.map(module => `<section class="permission-group"><label class="permission-parent"><input type="checkbox" data-permission-parent="${module.code}"><strong>${module.name}</strong><span>${module.children.length} 个菜单</span></label><div class="permission-children">${module.children.map(menu => `<label class="permission-item"><input type="checkbox" data-permission-child="${menu.code}" data-permission-module="${module.code}">${menu.name}</label>`).join('')}</div></section>`).join('');
+    }
+
+    function systemRolesPage() {
+      const statusOptions = [['ALL','全部状态'],['启用','启用'],['停用','停用']].map(([value,label]) => `<option value="${value}" ${roleViewState.status === value ? 'selected' : ''}>${label}</option>`).join('');
+      const keyword = roleViewState.keyword.toLowerCase();
+      const filteredRoles = systemRoles.filter(role => (!keyword || `${role.name} ${role.description}`.toLowerCase().includes(keyword)) && (roleViewState.status === 'ALL' || role.status === roleViewState.status));
+      const allMenuCount = adminMenuTree.reduce((total, module) => total + module.children.length, 0);
+      const rowsHtml = filteredRoles.map(role => {
+        const userCount = systemUsers.filter(user => user.roleId === role.id).length;
+        const permissionText = role.isSuperAdmin ? '全部菜单' : `${role.menuCodes.length} 个菜单`;
+        return `<tr data-role-row="${role.id}"><td><div class="person-cell"><span class="person-mark">${role.isSuperAdmin ? '超' : role.name.slice(0,1)}</span><div><div class="person-name">${role.name}</div><div class="person-id">${role.id}</div></div></div></td><td>${role.description}</td><td>${userCount}</td><td>${role.isSuperAdmin ? tag(permissionText,'info') : `${permissionText} / 共 ${allMenuCount}`}</td><td>${tag(role.status,toneFor(role.status))}</td><td>${role.updatedAt}</td><td><div class="row-actions"><button class="link" data-role-edit="${role.id}">${role.isSuperAdmin ? '查看' : '编辑'}</button>${role.isSuperAdmin ? '' : `<button class="link" data-role-status="${role.id}">${role.status === '启用' ? '停用' : '启用'}</button>`}</div></td></tr>`;
+      }).join('');
+      return `<div class="page-head"><p class="page-desc">角色统一配置后台菜单权限；一期不包含按钮权限和数据范围权限</p><div class="page-actions"><button class="btn primary" data-role-add>${icon('i-plus')}新建角色</button></div></div>
+        ${queryToolbar(`<input class="field search" data-role-keyword value="${escapeHtml(roleViewState.keyword)}" placeholder="搜索角色名称"><select class="field" data-role-status-filter>${statusOptions}</select>`)}
+        <section class="table-card"><div style="overflow:auto"><table class="data-table"><thead><tr><th>角色名称</th><th>角色说明</th><th>关联用户数</th><th>菜单权限</th><th>状态</th><th>更新时间</th><th>操作</th></tr></thead><tbody>${rowsHtml || `<tr><td colspan="7" class="muted" style="height:96px;text-align:center">当前条件下暂无角色</td></tr>`}</tbody></table></div>${pagination(String(filteredRoles.length))}</section>
+        <div class="modal-backdrop" data-role-modal hidden><section class="modal-card wide" role="dialog" aria-modal="true" aria-labelledby="roleModalTitle"><div class="modal-head"><span class="modal-title" id="roleModalTitle" data-role-modal-title>新建角色</span><button class="modal-close" data-role-modal-close aria-label="关闭">×</button></div><div class="modal-form"><div class="modal-field"><label>角色名称</label><input class="field" name="roleName" placeholder="请输入角色名称"></div><div class="modal-field"><label>状态</label><select class="field" name="roleStatus"><option>启用</option><option>停用</option></select></div><div class="modal-field full"><label>角色说明</label><input class="field" name="roleDescription" placeholder="说明该角色的职责范围"></div><div class="modal-field full"><label>菜单权限</label><span class="muted" style="font-size:11px">勾选一级模块可全选其下菜单，保存以二级菜单为准</span></div></div><div class="permission-tree" data-permission-tree>${renderPermissionTree()}</div><div class="modal-actions"><button class="btn" data-role-modal-close>关闭</button><button class="btn primary" data-role-save>保存角色</button></div></section></div>`;
+    }
+
+    function syncPermissionParent(moduleCode) {
+      const modal = document.querySelector('[data-role-modal]');
+      if (!modal) return;
+      const children = [...modal.querySelectorAll(`[data-permission-child][data-permission-module="${moduleCode}"]`)];
+      const parent = modal.querySelector(`[data-permission-parent="${moduleCode}"]`);
+      if (!parent) return;
+      const selectedCount = children.filter(child => child.checked).length;
+      parent.checked = children.length > 0 && selectedCount === children.length;
+      parent.indeterminate = selectedCount > 0 && selectedCount < children.length;
+    }
+
+    function openRoleEditor(roleId = '') {
+      const modal = document.querySelector('[data-role-modal]');
+      if (!modal) return;
+      const role = systemRoles.find(item => item.id === roleId);
+      const isSuperAdmin = Boolean(role?.isSuperAdmin);
+      modal.dataset.roleId = roleId;
+      modal.querySelector('[data-role-modal-title]').textContent = isSuperAdmin ? '查看超级管理员' : role ? '编辑角色权限' : '新建角色';
+      modal.querySelector('[name="roleName"]').value = role?.name || '';
+      modal.querySelector('[name="roleName"]').disabled = isSuperAdmin;
+      modal.querySelector('[name="roleDescription"]').value = role?.description || '';
+      modal.querySelector('[name="roleDescription"]').disabled = isSuperAdmin;
+      modal.querySelector('[name="roleStatus"]').value = role?.status || '启用';
+      modal.querySelector('[name="roleStatus"]').disabled = isSuperAdmin;
+      modal.querySelectorAll('[data-permission-child]').forEach(checkbox => {
+        checkbox.checked = isSuperAdmin || Boolean(role?.menuCodes.includes(checkbox.dataset.permissionChild));
+        checkbox.disabled = isSuperAdmin;
+      });
+      modal.querySelectorAll('[data-permission-parent]').forEach(checkbox => checkbox.disabled = isSuperAdmin);
+      adminMenuTree.forEach(module => syncPermissionParent(module.code));
+      modal.querySelector('[data-role-save]').hidden = isSuperAdmin;
+      modal.hidden = false;
+      if (!isSuperAdmin) modal.querySelector('[name="roleName"]').focus();
+    }
+
+    function closeRoleEditor() {
+      const modal = document.querySelector('[data-role-modal]');
+      if (modal) modal.hidden = true;
+    }
+
+    function saveRoleEditor() {
+      const modal = document.querySelector('[data-role-modal]');
+      if (!modal) return;
+      const existing = systemRoles.find(role => role.id === modal.dataset.roleId);
+      if (existing?.isSuperAdmin) return toast('超级管理员权限不可修改');
+      const name = modal.querySelector('[name="roleName"]').value.trim();
+      const description = modal.querySelector('[name="roleDescription"]').value.trim();
+      const status = modal.querySelector('[name="roleStatus"]').value;
+      const menuCodes = [...modal.querySelectorAll('[data-permission-child]:checked')].map(checkbox => checkbox.dataset.permissionChild);
+      if (!name) return toast('请输入角色名称');
+      if (!menuCodes.length) return toast('普通角色至少选择一个二级菜单');
+      if (systemRoles.some(role => role.id !== existing?.id && role.name === name)) return toast('角色名称已存在');
+      if (existing) Object.assign(existing, { name, description, status, menuCodes, updatedAt: '08-14 15:32' });
+      else systemRoles.push({ id: `ROLE-${String(systemRoles.length + 1).padStart(3,'0')}`, name, description, status, isSuperAdmin: false, menuCodes, updatedAt: '08-14 15:32' });
+      render('system-roles');
+      toast('角色权限已保存');
+    }
+
+    function toggleSystemRole(roleId) {
+      const role = findSystemRole(roleId);
+      if (!role || role.isSuperAdmin) return toast('超级管理员角色不可停用');
+      role.status = role.status === '启用' ? '停用' : '启用';
+      const affectedUsers = systemUsers.filter(user => user.roleId === roleId).length;
+      render('system-roles');
+      toast(`角色已${role.status}，影响 ${affectedUsers} 个用户`);
+    }
+
+    function publicApiDocUrl() {
+      return new URL('api-docs.html', window.location.href).href;
+    }
+
+    async function copyPublicApiDocUrl() {
+      const url = publicApiDocUrl();
+      let copied = false;
+      if (navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(url);
+          copied = true;
+        } catch (error) {
+          copied = false;
+        }
+      }
+      if (!copied) {
+        const textarea = document.createElement('textarea');
+        textarea.value = url;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        copied = document.execCommand('copy');
+        textarea.remove();
+      }
+      toast(copied ? '公开链接已复制' : '复制失败，请手工复制公开地址');
+    }
+
+    function systemApiDocsPage() {
+      const sections = [
+        '接入说明与鉴权', '商品分类与商品/SKU查询',
+        '收货地址、实时库存与运费查询', '创建订单',
+        '订单查询与状态说明', '物流查询',
+        '取消订单与异常处理', '账户余额查询',
+        '回调通知与幂等规则', '公共错误码与联调示例'
+      ];
+      return `<div class="page-head"><p class="page-desc">API客户统一访问同一套公开接口文档；链接长期有效，请勿在文档中填写客户密钥</p><div class="page-actions"><button class="btn" data-api-doc-preview>预览公开文档</button><button class="btn primary" data-api-doc-copy>复制公开链接</button></div></div>
+        <section class="config-card api-doc-overview" data-api-doc-admin><div class="detail-grid api-doc-meta"><div class="detail-item"><span>公开地址</span><strong data-api-doc-url>/api-docs.html（部署后使用当前公开域名）</strong></div><div class="detail-item"><span>当前版本</span><strong>v1.0</strong></div><div class="detail-item"><span>最近更新时间</span><strong>2026-08-14</strong></div><div class="detail-item"><span>文档状态</span><strong>${tag('公开访问','success')}</strong></div></div><div class="api-doc-directory-head"><strong>接口目录 · 十个章节</strong><span>固定标准文档，所有 API 客户查看同一版本</span></div><div class="api-doc-section-grid">${sections.map((title,index) => `<article><span>${String(index + 1).padStart(2,'0')}</span><strong>${title}</strong></article>`).join('')}</div></section>`;
+    }
+
+    const categoryData = [
+      {
+        id: 'office', name: '办公用品', code: 'CAT-OFFICE', level: 1, status: '启用', sort: 10, updatedAt: '08-14 14:20', expanded: true,
+        children: [
+          { id: 'office-consumables', name: '办公耗材', code: 'CAT-OFFICE-01', level: 2, sourcingCount: 206, selfOperatedCount: 12, status: '启用', sort: 10, updatedAt: '08-14 14:18' },
+          { id: 'office-equipment', name: '办公设备', code: 'CAT-OFFICE-02', level: 2, sourcingCount: 168, selfOperatedCount: 24, status: '启用', sort: 20, updatedAt: '08-14 14:12' }
+        ]
+      },
+      {
+        id: 'digital', name: '数码家电', code: 'CAT-DIGITAL', level: 1, status: '启用', sort: 20, updatedAt: '08-14 13:56', expanded: false,
+        children: [
+          { id: 'digital-keyboard', name: '键鼠外设', code: 'CAT-DIGITAL-01', level: 2, sourcingCount: 286, selfOperatedCount: 18, status: '启用', sort: 10, updatedAt: '08-14 13:52' },
+          { id: 'digital-power', name: '移动电源', code: 'CAT-DIGITAL-02', level: 2, sourcingCount: 198, selfOperatedCount: 12, status: '启用', sort: 20, updatedAt: '08-14 13:48' }
+        ]
+      },
+      {
+        id: 'daily', name: '生活日用', code: 'CAT-DAILY', level: 1, status: '启用', sort: 30, updatedAt: '08-14 12:36', expanded: false,
+        children: [
+          { id: 'daily-cups', name: '水杯壶具', code: 'CAT-DAILY-01', level: 2, sourcingCount: 152, selfOperatedCount: 34, status: '启用', sort: 10, updatedAt: '08-14 12:30' },
+          { id: 'daily-home', name: '家居清洁', code: 'CAT-DAILY-02', level: 2, sourcingCount: 118, selfOperatedCount: 42, status: '启用', sort: 20, updatedAt: '08-14 12:24' }
+        ]
+      },
+      {
+        id: 'bags', name: '商务箱包', code: 'CAT-BAGS', level: 1, status: '启用', sort: 40, updatedAt: '08-14 11:42', expanded: false,
+        children: [
+          { id: 'bags-backpack', name: '双肩包', code: 'CAT-BAGS-01', level: 2, sourcingCount: 96, selfOperatedCount: 8, status: '启用', sort: 10, updatedAt: '08-14 11:38' },
+          { id: 'bags-suitcase', name: '行李箱', code: 'CAT-BAGS-02', level: 2, sourcingCount: 82, selfOperatedCount: 6, status: '停用', sort: 20, updatedAt: '08-14 11:32' }
+        ]
+      },
+      { id: 'care', name: '员工关怀', code: 'CAT-CARE', level: 1, status: '停用', sort: 50, updatedAt: '08-14 10:16', expanded: false, children: [] }
+    ];
+
+    const categoryCounts = category => category.children.reduce((result, child) => ({
+      sourcing: result.sourcing + child.sourcingCount,
+      selfOperated: result.selfOperated + child.selfOperatedCount
+    }), { sourcing: 0, selfOperated: 0 });
+
+    function findCategory(categoryId) {
+      for (const parent of categoryData) {
+        if (parent.id === categoryId) return { category: parent, parent: null };
+        const child = parent.children.find(item => item.id === categoryId);
+        if (child) return { category: child, parent };
+      }
+      return { category: null, parent: null };
+    }
+
+    const productViewState = {
+      selectedCategoryId: 'all',
+      expandedCategoryIds: new Set(['office']),
+      keyword: '',
+      source: 'all',
+      status: 'all'
+    };
+
+    const escapeHtml = value => String(value).replace(/[&<>"']/g, character => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[character]);
+
+    function getSelectedProductCategory() {
+      if (productViewState.selectedCategoryId === 'all') return { id: 'all', name: '全部', level: 0 };
+      return findCategory(productViewState.selectedCategoryId).category || { id: 'all', name: '全部', level: 0 };
+    }
+
+    function productCountForCategory(categoryId) {
+      if (categoryId === 'all') return rows.products.length;
+      const { category } = findCategory(categoryId);
+      if (!category) return 0;
+      return rows.products.filter(product => category.level === 1
+        ? product.parentCategoryId === categoryId
+        : product.categoryId === categoryId).length;
+    }
+
+    function renderProductCategoryTree() {
+      const selectedCategoryId = productViewState.selectedCategoryId;
+      const allNode = `<div class="product-tree-row"><span class="product-tree-spacer"></span><button class="product-category-node ${selectedCategoryId === 'all' ? 'active' : ''}" data-product-category="all"><span>全部</span><span class="tree-count">${productCountForCategory('all')}</span></button></div>`;
+      const categoryNodes = categoryData.map(parent => {
+        const expanded = productViewState.expandedCategoryIds.has(parent.id);
+        const expander = parent.children.length
+          ? `<button class="product-tree-expander ${expanded ? '' : 'collapsed'}" data-product-tree-toggle="${parent.id}" aria-label="${expanded ? '收起' : '展开'}${parent.name}" aria-expanded="${expanded}">${icon('i-chevron')}</button>`
+          : '<span class="product-tree-spacer"></span>';
+        const parentNode = `<div class="product-tree-row">${expander}<button class="product-category-node ${selectedCategoryId === parent.id ? 'active' : ''}" data-product-category="${parent.id}"><span>${parent.name}</span><span class="tree-count">${productCountForCategory(parent.id)}</span></button></div>`;
+        const children = parent.children.map(child => `<div class="product-tree-row child"><span class="product-tree-spacer"></span><button class="product-category-node ${selectedCategoryId === child.id ? 'active' : ''}" data-product-category="${child.id}"><span>${child.name}</span><span class="tree-count">${productCountForCategory(child.id)}</span></button></div>`).join('');
+        return `${parentNode}<div data-product-tree-children="${parent.id}" ${expanded ? '' : 'hidden'}>${children}</div>`;
+      }).join('');
+      return `<div class="product-tree-list">${allNode}${categoryNodes}</div>`;
+    }
+
+    function filterProductRows() {
+      return rows.products.filter(product => {
+        const categoryMatch = productViewState.selectedCategoryId === 'all'
+          || product.categoryId === productViewState.selectedCategoryId
+          || product.parentCategoryId === productViewState.selectedCategoryId;
+        const keyword = productViewState.keyword.toLowerCase();
+        const keywordMatch = !keyword || product.cells.slice(0, 3).join(' ').toLowerCase().includes(keyword);
+        const sourceMatch = productViewState.source === 'all' || product.cells[4] === productViewState.source;
+        const statusMatch = productViewState.status === 'all' || product.cells.at(-1) === productViewState.status;
+        return categoryMatch && keywordMatch && sourceMatch && statusMatch;
+      });
+    }
+
+    function productPage() {
+      const [, desc, heads, action] = meta.products;
+      const currentCategory = getSelectedProductCategory();
+      const products = filterProductRows();
+      const body = products.length ? products.map(product => {
+        const isSourcing = product.cells[4] === '集采';
+        const actions = isSourcing
+          ? `<button class="link" data-product-action="detail" onclick="toast('已打开 ${product.cells[0]} 详情')">查看详情</button><button class="link" data-product-action="sku" onclick="toast('已打开 ${product.cells[0]} SKU')">查看SKU</button><button class="link" data-product-action="sync" onclick="toast('${product.cells[0]} 已发起同步')">同步信息</button><button class="link" data-product-action="off-shelf" onclick="toast('${product.cells[0]} 已下架')">下架</button>`
+          : `<button class="link" data-product-action="edit" onclick="toast('已打开 ${product.cells[0]} 编辑')">编辑</button><button class="link" data-product-action="sku" onclick="toast('已打开 ${product.cells[0]} SKU')">查看SKU</button><button class="link" data-product-action="off-shelf" onclick="toast('${product.cells[0]} 已下架')">下架</button>`;
+        return `<tr data-product-row>${product.cells.map((cell,index) => {
+        const value = index === product.cells.length - 1 ? tag(cell, toneFor(cell)) : index === 0 ? `<button class="link" onclick="toast('已打开 ${cell} 详情')">${cell}</button>` : cell;
+        return `<td class="${String(cell).includes('¥') ? 'money' : ''}">${value}</td>`;
+        }).join('')}<td><div class="row-actions">${actions}</div></td></tr>`;
+      }).join('') : `<tr><td colspan="${heads.length}" class="muted" style="text-align:center">当前分类下暂无符合条件的商品</td></tr>`;
+      const sourceOptions = [['all','全部来源'],['自营','自营商品'],['集采','集采商品']]
+        .map(([value, label]) => `<option value="${value}" ${productViewState.source === value ? 'selected' : ''}>${label}</option>`).join('');
+      const statusOptions = [['all','全部状态'],['正常','正常'],['充足','充足'],['紧张','库存紧张'],['无货','无货']]
+        .map(([value, label]) => `<option value="${value}" ${productViewState.status === value ? 'selected' : ''}>${label}</option>`).join('');
+      const queryFields = `<span class="product-current-category">当前分类：<strong data-product-current-category>${currentCategory.name}</strong></span><input class="field search" data-product-keyword value="${escapeHtml(productViewState.keyword)}" placeholder="搜索商品名称或编码"><select class="field" data-product-source>${sourceOptions}</select><select class="field" data-product-status>${statusOptions}</select>`;
+      return `<div class="page-head"><p class="page-desc">${desc}</p><div class="page-actions"><button class="btn" onclick="toast('已打开平台兜底加价配置')">平台兜底加价</button><button class="btn">${icon('i-download')}导出</button><button class="btn primary" onclick="toast('${action}操作已开启')">${icon('i-plus')}${action}</button></div></div>
+        <div class="product-catalog-layout" data-product-layout>
+          <aside class="product-category-tree"><div class="tree-title">平台商品分类</div>${renderProductCategoryTree()}</aside>
+          <section class="product-list-panel">${queryToolbar(queryFields)}<section class="table-card"><div style="overflow:auto"><table class="data-table"><thead><tr>${heads.map(head => `<th>${head}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>${pagination(String(products.length))}</section></section>
+        </div>`;
+    }
+
+    function renderCategoryRows() {
+      return categoryData.map(parent => {
+        const counts = categoryCounts(parent);
+        const parentRow = `<tr class="category-parent-row" data-category-row="${parent.id}"><td><div class="category-name-cell">${parent.children.length ? `<button class="category-expander ${parent.expanded ? '' : 'collapsed'}" data-category-toggle="${parent.id}" aria-label="${parent.expanded ? '收起' : '展开'}${parent.name}">${icon('i-chevron')}</button>` : '<span style="width:24px"></span>'}<span>${parent.name}</span></div></td><td class="category-code">${parent.code}</td><td>${tag('一级分类','info')}</td><td><button class="link count-link" data-sourcing-count onclick="toast('已按集采商品筛选')">${counts.sourcing}</button></td><td><button class="link count-link" data-self-count onclick="toast('已按自营商品筛选')">${counts.selfOperated}</button></td><td>${tag(parent.status,parent.status==='启用'?'success':'danger')}</td><td>${parent.sort}</td><td>${parent.updatedAt}</td><td><div class="row-actions"><button class="link" data-category-edit="${parent.id}">编辑</button><button class="link" data-category-status="${parent.id}">${parent.status==='启用'?'停用':'启用'}</button><button class="link" data-category-delete="${parent.id}">删除</button></div></td></tr>`;
+        const childRows = parent.expanded ? parent.children.map(child => `<tr class="category-child-row" data-category-child="${parent.id}" data-category-row="${child.id}"><td><div class="category-name-cell child"><span class="category-branch"></span><span>${child.name}</span></div></td><td class="category-code">${child.code}</td><td>${tag('二级分类')}</td><td><button class="link count-link" data-sourcing-count onclick="toast('已按集采商品筛选')">${child.sourcingCount}</button></td><td><button class="link count-link" data-self-count onclick="toast('已按自营商品筛选')">${child.selfOperatedCount}</button></td><td>${tag(child.status,child.status==='启用'?'success':'danger')}</td><td>${child.sort}</td><td>${child.updatedAt}</td><td><div class="row-actions"><button class="link" data-category-edit="${child.id}">编辑</button><button class="link" data-category-status="${child.id}">${child.status==='启用'?'停用':'启用'}</button><button class="link" data-category-delete="${child.id}">删除</button></div></td></tr>`).join('') : '';
+        return parentRow + childRows;
+      }).join('');
+    }
+
+    function categoryPage() {
+      const parentOptions = categoryData.map(parent => `<option value="${parent.id}">${parent.name}</option>`).join('');
+      return `<div class="page-head"><p class="page-desc">平台两级分类使用树形表格维护；一级数量汇总下属二级分类，二级数量统计直属商品</p><div class="page-actions"><button class="btn primary" data-category-add>${icon('i-plus')}新增分类</button></div></div>
+        ${queryToolbar('<input class="field search" placeholder="搜索分类名称或编码"><select class="field"><option>全部层级</option><option>一级分类</option><option>二级分类</option></select><select class="field"><option>全部状态</option><option>启用</option><option>停用</option></select>')}
+        <section class="table-card"><div style="overflow:auto"><table class="category-tree-table data-table"><thead><tr><th>分类名称</th><th>分类编码</th><th>分类层级</th><th>集采商品数</th><th>自营商品数</th><th>状态</th><th>排序</th><th>更新时间</th><th>操作</th></tr></thead><tbody>${renderCategoryRows()}</tbody></table></div></section>
+        <div class="modal-backdrop" data-category-modal hidden><section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="categoryModalTitle"><div class="modal-head"><span class="modal-title" id="categoryModalTitle" data-category-modal-title>编辑分类</span><button class="modal-close" data-category-modal-close aria-label="关闭">×</button></div><div class="modal-form"><div class="modal-field full"><label>分类名称</label><input class="field" name="categoryName" placeholder="请输入分类名称"></div><div class="modal-field"><label>分类编码</label><input class="field" name="categoryCode" placeholder="请输入唯一编码"></div><div class="modal-field"><label>分类层级</label><select class="field" name="categoryLevel"><option value="1">一级分类</option><option value="2">二级分类</option></select></div><div class="modal-field full" data-category-parent-field hidden><label>所属一级分类</label><select class="field" name="categoryParent"><option value="">请选择一级分类</option>${parentOptions}</select></div><div class="modal-field"><label>排序</label><input class="field" name="categorySort" type="number" min="0"></div><div class="modal-field"><label>状态</label><select class="field" name="categoryStatus"><option>启用</option><option>停用</option></select></div></div><div class="modal-actions"><button class="btn" data-category-modal-close>取消</button><button class="btn primary" data-category-save>保存分类</button></div></section></div>`;
+    }
+
+    function toggleCategory(categoryId) {
+      const { category } = findCategory(categoryId);
+      if (!category || category.level !== 1) return;
+      category.expanded = !category.expanded;
+      render('category');
+    }
+
+    function syncCategoryLevelFields() {
+      const modal = document.querySelector('[data-category-modal]');
+      if (!modal) return;
+      const levelSelect = modal.querySelector('[name="categoryLevel"]');
+      const parentField = modal.querySelector('[data-category-parent-field]');
+      const parentSelect = modal.querySelector('[name="categoryParent"]');
+      const level = Number(levelSelect.value);
+      parentField.hidden = level === 1;
+      parentSelect.disabled = level === 1;
+      if (level === 1) parentSelect.value = '';
+      modal.dataset.categoryLevel = String(level);
+      if (!modal.dataset.categoryId) {
+        modal.querySelector('[data-category-modal-title]').textContent = `新增${level === 1 ? '一级' : '二级'}分类`;
+      }
+    }
+
+    function openCategoryEditor(categoryId='') {
+      const modal = document.querySelector('[data-category-modal]');
+      if (!modal) return;
+      const { category, parent } = findCategory(categoryId);
+      const level = category?.level || 1;
+      modal.dataset.categoryId = categoryId;
+      modal.dataset.categoryLevel = String(level);
+      modal.querySelector('[data-category-modal-title]').textContent = category ? `编辑${level === 1 ? '一级' : '二级'}分类` : `新增${level === 1 ? '一级' : '二级'}分类`;
+      modal.querySelector('[name="categoryName"]').value = category?.name || '';
+      modal.querySelector('[name="categoryCode"]').value = category?.code || '';
+      const levelSelect = modal.querySelector('[name="categoryLevel"]');
+      levelSelect.value = String(level);
+      levelSelect.disabled = Boolean(category);
+      const parentSelect = modal.querySelector('[name="categoryParent"]');
+      parentSelect.value = parent?.id || '';
+      modal.querySelector('[name="categorySort"]').value = category?.sort ?? 10;
+      modal.querySelector('[name="categoryStatus"]').value = category?.status || '启用';
+      syncCategoryLevelFields();
+      modal.hidden = false;
+      modal.querySelector('[name="categoryName"]').focus();
+    }
+
+    function closeCategoryEditor() {
+      const modal = document.querySelector('[data-category-modal]');
+      if (modal) modal.hidden = true;
+    }
+
+    function saveCategoryEditor() {
+      const modal = document.querySelector('[data-category-modal]');
+      if (!modal) return;
+      const name = modal.querySelector('[name="categoryName"]').value.trim();
+      const code = modal.querySelector('[name="categoryCode"]').value.trim();
+      if (!name || !code) { toast('请完整填写分类名称和编码'); return; }
+      const level = Number(modal.querySelector('[name="categoryLevel"]').value);
+      const parentId = modal.querySelector('[name="categoryParent"]').value;
+      if (level === 2 && !parentId) { toast('请选择所属一级分类'); return; }
+      const values = { name, code, sort: Number(modal.querySelector('[name="categorySort"]').value || 0), status: modal.querySelector('[name="categoryStatus"]').value, updatedAt: '08-14 15:10' };
+      const result = findCategory(modal.dataset.categoryId);
+      if (result.category) {
+        Object.assign(result.category, values);
+      } else if (level === 1) {
+        categoryData.push({ id: `category-${Date.now()}`, level: 1, expanded: false, children: [], ...values });
+      } else {
+        const parent = categoryData.find(category => category.id === parentId);
+        if (!parent) { toast('请选择所属一级分类'); return; }
+        parent.children.push({ id: `category-${Date.now()}`, level: 2, sourcingCount: 0, selfOperatedCount: 0, ...values });
+        parent.expanded = true;
+      }
+      closeCategoryEditor();
+      render('category');
+      toast('分类配置已保存');
+    }
+
+    function toggleCategoryStatus(categoryId) {
+      const { category } = findCategory(categoryId);
+      if (!category) return;
+      category.status = category.status === '启用' ? '停用' : '启用';
+      category.updatedAt = '08-14 15:10';
+      render('category');
+      toast(`分类已${category.status}`);
+    }
+
+    function deleteCategory(categoryId) {
+      const result = findCategory(categoryId);
+      if (!result.category) return;
+      if (result.category.level === 1 && result.category.children.length) {
+        toast(`存在 ${result.category.children.length} 个二级分类，不能删除`);
+        return;
+      }
+      if (result.category.level === 2 && result.category.sourcingCount + result.category.selfOperatedCount > 0) {
+        toast(`关联集采商品 ${result.category.sourcingCount} 个、自营商品 ${result.category.selfOperatedCount} 个，不能删除`);
+        return;
+      }
+      if (result.parent) result.parent.children = result.parent.children.filter(category => category.id !== categoryId);
+      else categoryData.splice(categoryData.findIndex(category => category.id === categoryId), 1);
+      render('category');
+      toast('空分类已删除');
+    }
+
+    function suppliersPage() {
+      const suppliers = [['京选集采','API自动接入','6,824','142','10 分钟前',true,true,'连接正常'],['企采云','API自动接入','4,218','86','18 分钟前',true,false,'连接正常'],['华采供应链','文件 + API','2,096','203','2 小时前',false,true,'部分失败']];
+      const body = suppliers.map(row=>`<tr><td><button class="link" onclick="toast('已打开 ${row[0]} 详情与API配置')">${row[0]}</button></td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td><td>${switchControl(row[5],'切换小程序展示')}</td><td>${switchControl(row[6],'切换API展示')}</td><td>${tag(row[7],toneFor(row[7]))}</td><td><div class="row-actions"><button class="link" data-supplier-sources="${row[0]}">来源商品</button><button class="link" onclick="toast('已开始同步 ${row[0]}')">立即同步</button></div></td></tr>`).join('');
+      return `<div class="page-head"><p class="page-desc">供货平台详情集中维护 API 接入、同步任务和面向两类下游渠道的总开关</p><div class="page-actions"><button class="btn primary" onclick="toast('已打开供货平台接入')">${icon('i-plus')}接入供货平台</button></div></div>
+        ${queryToolbar('<input class="field search" placeholder="搜索供货平台"><select class="field"><option>全部连接状态</option><option>连接正常</option><option>部分失败</option></select>')}
+        <section class="table-card"><div style="overflow:auto"><table class="data-table"><thead><tr><th>平台</th><th>接入方式</th><th>来源商品</th><th>未映射分类</th><th>最近同步</th><th>小程序展示</th><th>API展示</th><th>连接状态</th><th>操作</th></tr></thead><tbody>${body}</tbody></table></div>${pagination('3')}</section>`;
+    }
+
+    const mappingSuppliers = [
+      { id: 'JX', name: '京选集采' },
+      { id: 'QCY', name: '企采云' },
+      { id: 'HC', name: '华采供应链' }
+    ];
+
+    const mappingViewState = {
+      supplierId: 'JX',
+      keyword: '',
+      mappingStatus: 'ALL',
+      sourceStatus: 'ALL',
+      collapsedPlatformIds: new Set(),
+      collapsedSourceGroupKeys: new Set()
+    };
+    const mappingRows = [
+      { supplierId: 'JX', sourceCategoryId: 'JX-PAPER', sourceCode: 'JX-CAT-0201', sourcePath: '办公用品 / 办公纸品', sourceName: '办公纸品', productCount: 512, platformCategoryId: 'office-consumables', sourceStatus: 'ACTIVE', rowVersion: 3, updatedAt: '08-14 14:18', history: [{ action: '新增映射', before: '—', after: '办公用品 / 办公耗材', source: '手工操作', operator: '平台运营员', time: '08-12 10:26', productCount: 512 }] },
+      { supplierId: 'JX', sourceCategoryId: 'JX-KEYBOARD', sourceCode: 'JX-CAT-0312', sourcePath: '数码设备 / 键盘', sourceName: '键盘', productCount: 286, platformCategoryId: 'digital-keyboard', sourceStatus: 'ACTIVE', rowVersion: 2, updatedAt: '08-14 14:16', history: [{ action: '新增映射', before: '—', after: '数码家电 / 键鼠外设', source: '导入任务 IMP-JX-0811', operator: '平台运营员', time: '08-11 09:20', productCount: 286 }] },
+      { supplierId: 'JX', sourceCategoryId: 'JX-MEETING', sourceCode: 'JX-CAT-0318', sourcePath: '数码设备 / 会议平板', sourceName: '会议平板', productCount: 86, platformCategoryId: null, sourceStatus: 'ACTIVE', rowVersion: 1, updatedAt: '08-14 14:10', history: [] },
+      { supplierId: 'JX', sourceCategoryId: 'JX-OLD-CLEAN', sourceCode: 'JX-CAT-0509', sourcePath: '生活日用 / 清洁旧分类', sourceName: '清洁旧分类', productCount: 0, platformCategoryId: 'daily-home', sourceStatus: 'INVALID', rowVersion: 4, updatedAt: '08-13 18:42', history: [{ action: '来源失效', before: '生活日用 / 家居清洁', after: '保留关系，停止解析', source: '来源同步', operator: '系统', time: '08-13 18:42', productCount: 0 }] },
+      { supplierId: 'QCY', sourceCategoryId: 'QCY-CUP', sourceCode: 'QCY-CAT-1102', sourcePath: '员工福利 / 水杯', sourceName: '水杯', productCount: 164, platformCategoryId: 'daily-cups', sourceStatus: 'ACTIVE', rowVersion: 2, updatedAt: '08-14 13:52', history: [{ action: '新增映射', before: '—', after: '生活日用 / 水杯壶具', source: '手工操作', operator: '平台运营员', time: '08-10 11:08', productCount: 164 }] },
+      { supplierId: 'QCY', sourceCategoryId: 'QCY-BACKPACK', sourceCode: 'QCY-CAT-1406', sourcePath: '箱包服饰 / 商务双肩包', sourceName: '商务双肩包', productCount: 92, platformCategoryId: null, sourceStatus: 'ACTIVE', rowVersion: 1, updatedAt: '08-14 13:48', history: [] },
+      { supplierId: 'QCY', sourceCategoryId: 'QCY-POWER', sourceCode: 'QCY-CAT-1216', sourcePath: '数码配件 / 移动电源', sourceName: '移动电源', productCount: 118, platformCategoryId: null, sourceStatus: 'ACTIVE', rowVersion: 1, updatedAt: '08-14 13:40', history: [] },
+      { supplierId: 'HC', sourceCategoryId: 'HC-OFFICE', sourceCode: 'HC-CAT-0208', sourcePath: '办公集采 / 通用耗材', sourceName: '通用耗材', productCount: 203, platformCategoryId: 'office-consumables', sourceStatus: 'ACTIVE', rowVersion: 2, updatedAt: '08-14 12:16', history: [{ action: '新增映射', before: '—', after: '办公用品 / 办公耗材', source: '导入任务 IMP-HC-0809', operator: '平台运营员', time: '08-09 15:32', productCount: 203 }] },
+      { supplierId: 'HC', sourceCategoryId: 'HC-SUITCASE', sourceCode: 'HC-CAT-0711', sourcePath: '差旅用品 / 拉杆箱', sourceName: '拉杆箱', productCount: 76, platformCategoryId: null, sourceStatus: 'ACTIVE', rowVersion: 1, updatedAt: '08-14 12:08', history: [] }
+    ];
+
+    const mappingSupplier = (supplierId = mappingViewState.supplierId) => mappingSuppliers.find(item => item.id === supplierId) || mappingSuppliers[0];
+    const findMappingRow = sourceCategoryId => mappingRows.find(item => item.sourceCategoryId === sourceCategoryId);
+    const platformCategoryPath = categoryId => {
+      const result = findCategory(categoryId);
+      if (!result.category) return '—';
+      return result.parent ? `${result.parent.name} / ${result.category.name}` : result.category.name;
+    };
+    const mappingStatus = row => row.platformCategoryId ? 'MAPPED' : 'UNMAPPED';
+
+    function filteredMappingRows() {
+      const keyword = mappingViewState.keyword.toLowerCase();
+      return mappingRows.filter(row => row.supplierId === mappingViewState.supplierId)
+        .filter(row => !keyword || `${row.sourceCode} ${row.sourcePath} ${platformCategoryPath(row.platformCategoryId)}`.toLowerCase().includes(keyword))
+        .filter(row => mappingViewState.mappingStatus === 'ALL' || mappingStatus(row) === mappingViewState.mappingStatus)
+        .filter(row => mappingViewState.sourceStatus === 'ALL' || row.sourceStatus === mappingViewState.sourceStatus);
+    }
+
+    function renderMappingModal() {
+      const parentOptions = categoryData.filter(parent => parent.status === '启用').map(parent => `<option value="${parent.id}">${parent.name}</option>`).join('');
+      return `<div class="modal-backdrop" data-mapping-modal hidden><section class="modal-card wide" role="dialog" aria-modal="true"><div class="modal-head"><span class="modal-title" data-mapping-modal-title>设置分类映射</span><button class="modal-close" data-mapping-modal-close aria-label="关闭">×</button></div>
+        <div data-mapping-editor-body><div class="modal-form"><div class="modal-field"><label>来源二级分类</label><strong data-mapping-source-name>—</strong></div><div class="modal-field"><label>来源分类编码</label><strong data-mapping-source-code>—</strong></div><div class="modal-field full"><label>来源分类路径</label><strong data-mapping-source-path>—</strong></div><div class="modal-field"><label>有效商品数</label><strong data-mapping-product-count>0</strong></div><div class="modal-field"><label>当前映射</label><strong data-mapping-current-target>—</strong></div><div class="modal-field"><label>平台一级分类</label><select class="field" data-mapping-platform-parent><option value="">请选择一级分类</option>${parentOptions}</select></div><div class="modal-field"><label>平台二级分类</label><select class="field" data-mapping-platform-child disabled><option value="">请先选择一级分类</option></select></div><div class="modal-field full"><label>生效说明</label><span class="muted">保存后立即按新关系动态解析商品分类；只更新映射关系，不迁移商品表。</span></div></div><div class="modal-actions"><button class="btn" data-mapping-unbind hidden>解除映射</button><button class="btn primary" data-mapping-save>保存映射</button></div></div>
+        <div data-mapping-unbind-confirmation hidden><div class="tab-body"><div class="mini-stat" style="border-color:var(--danger)"><span>解除影响</span><strong>相关商品将退出商品管理和下游新销售范围</strong></div><p class="muted" style="line-height:1.8">解除后商品不会删除，也不会迁移商品表；商品将进入当前供货平台来源商品的“待映射”视图，重新映射后自动恢复归集。</p></div><div class="modal-actions"><button class="btn" data-mapping-unbind-cancel>返回编辑</button><button class="btn primary" data-mapping-unbind-confirm>确认解除</button></div></div>
+        <div data-mapping-history-body hidden><div class="tab-body" data-mapping-history-list></div></div>
+      </section></div>`;
+    }
+
+    function renderMappingImportModal() {
+      return `<div class="modal-backdrop" data-mapping-import-modal hidden><section class="modal-card wide" role="dialog" aria-modal="true"><div class="modal-head"><span class="modal-title" data-mapping-import-title>导入分类映射</span><button class="modal-close" data-mapping-import-close aria-label="关闭">×</button></div>
+        <div data-mapping-import-upload><div class="modal-form"><div class="modal-field full"><label>当前供货平台</label><strong data-mapping-import-supplier>—</strong></div><div class="modal-field full"><label>增量导入文件</label><input class="field" type="file" accept=".xlsx,.xls,.csv"><span class="muted">每行操作填写“绑定”或“解除”；未出现在文件中的关系保持不变。</span></div><div class="modal-field full"><label>校验规则</label><span class="muted">文件平台编码必须与当前页签一致；来源分类重复行全部失败；执行前映射版本变化需重新预览。</span></div></div><div class="modal-actions"><button class="btn" onclick="toast('映射导入模板已下载')">${icon('i-download')}下载模板</button><button class="btn primary" data-mapping-import-preview>预览校验</button></div></div>
+        <div data-mapping-import-preview-body hidden><div class="tab-body"><div class="mapping-stats" style="grid-template-columns:repeat(3,1fr)"><div class="mini-stat"><span>新增绑定</span><strong>2</strong></div><div class="mini-stat"><span>修改映射</span><strong>1</strong></div><div class="mini-stat"><span>解除映射</span><strong>1</strong></div><div class="mini-stat"><span>无变化</span><strong>3</strong></div><div class="mini-stat" style="border-color:var(--danger)"><span>校验失败</span><strong>1</strong></div><div class="mini-stat" style="border-color:var(--warning)"><span>受影响商品</span><strong>486</strong></div></div><div class="table-card"><table class="data-table"><thead><tr><th>文件行</th><th>操作</th><th>来源分类</th><th>目标平台分类</th><th>校验结果</th></tr></thead><tbody><tr><td>2</td><td>绑定</td><td>办公用品 / 文件管理</td><td>办公用品 / 办公耗材</td><td>${tag('通过','success')}</td></tr><tr><td>5、8</td><td>绑定</td><td>数码设备 / 会议终端</td><td>数码家电 / 办公设备</td><td>${tag('来源分类重复','danger')}</td></tr></tbody></table></div><p class="muted" style="margin:14px 0 0">预览版本：<strong>JX-MAP-V12</strong>。确认执行后，有效行落库，失败行保留在失败明细中。</p></div><div class="modal-actions"><button class="btn" data-mapping-import-back>返回上传</button><button class="btn primary" data-mapping-import-execute>确认执行</button></div></div>
+        <div data-mapping-import-result hidden><div class="tab-body"><div class="mini-stat" style="border-color:var(--warning)"><span>执行结果</span><strong>部分成功</strong></div><div class="detail-grid" style="margin-top:14px"><div class="detail-item"><span>成功</span><strong>3 条</strong></div><div class="detail-item"><span>失败</span><strong>1 条</strong></div><div class="detail-item"><span>任务编号</span><strong>IMP-JX-20260814-03</strong></div></div><p class="muted" style="line-height:1.8">有效关系已保存并刷新当前平台映射版本；失败行未落库，可修正后再次增量导入。</p></div><div class="modal-actions"><button class="btn" onclick="toast('失败明细已下载')">${icon('i-download')}下载失败明细</button></div></div>
+        <div data-mapping-import-history-body hidden><div class="tab-body"><div class="table-card" style="margin-top:0"><table class="data-table"><thead><tr><th>任务编号</th><th>文件名</th><th>操作人</th><th>执行时间</th><th>成功/失败</th><th>状态</th></tr></thead><tbody><tr><td>IMP-JX-20260813-02</td><td>京选分类映射_0813.xlsx</td><td>平台运营员</td><td>08-13 16:42</td><td>28 / 2</td><td>${tag('部分成功','warning')}</td></tr><tr><td>IMP-JX-20260811-01</td><td>京选分类映射_0811.xlsx</td><td>平台运营员</td><td>08-11 09:20</td><td>36 / 0</td><td>${tag('全部成功','success')}</td></tr></tbody></table></div></div></div>
+      </section></div>`;
+    }
+
+    function renderMappingPlatformTree(records) {
+      const mappedTargets = new Set(records.filter(row => row.platformCategoryId).map(row => row.platformCategoryId));
+      const targetRelationCounts = records.reduce((counts, row) => {
+        if (row.platformCategoryId) counts[row.platformCategoryId] = (counts[row.platformCategoryId] || 0) + 1;
+        return counts;
+      }, {});
+      const nodes = categoryData.map(parent => {
+        const collapsed = mappingViewState.collapsedPlatformIds.has(parent.id);
+        const expander = parent.children.length
+          ? `<button class="product-tree-expander ${collapsed ? 'collapsed' : ''}" data-mapping-platform-toggle="${parent.id}" aria-label="${collapsed ? '展开' : '收起'}${parent.name}" aria-expanded="${!collapsed}">${icon('i-chevron')}</button>`
+          : '<span class="product-tree-spacer"></span>';
+        const parentNode = `<div class="product-tree-row">${expander}<div class="product-category-node"><span>${parent.name}</span><span class="tree-count">${parent.children.length}</span></div></div>`;
+        const children = parent.children.map(child => {
+          const relationCount = targetRelationCounts[child.id] || 0;
+          return `<div class="product-tree-row child"><span class="product-tree-spacer"></span><div class="product-category-node level-two ${mappedTargets.has(child.id) ? 'mapped-target' : ''}" data-mapping-platform-node="${child.id}" title="${parent.name} / ${child.name}"><span>${child.name}</span><span class="tree-count">${relationCount ? `${relationCount} 条关系` : '—'}</span></div></div>`;
+        }).join('');
+        return `${parentNode}<div data-mapping-platform-children="${parent.id}" ${collapsed ? 'hidden' : ''}>${children}</div>`;
+      }).join('');
+      return `<section class="mapping-tree-panel mapping-platform-tree" data-mapping-platform-tree><div class="mapping-tree-head"><strong>平台商品分类</strong><span>平台统一两级分类</span></div><div class="mapping-tree-body"><div class="product-tree-list">${nodes}</div></div></section>`;
+    }
+
+    function renderMappingSourceTree(records) {
+      const groups = new Map();
+      records.forEach(row => {
+        const [parentName = '未分组'] = row.sourcePath.split(' / ');
+        if (!groups.has(parentName)) groups.set(parentName, []);
+        groups.get(parentName).push(row);
+      });
+      const groupNodes = [...groups.entries()].map(([parentName, rows]) => {
+        const groupKey = `${mappingViewState.supplierId}:${parentName}`;
+        const collapsed = mappingViewState.collapsedSourceGroupKeys.has(groupKey);
+        const children = rows.map(row => {
+          const isMapped = Boolean(row.platformCategoryId);
+          const sourceStatusText = row.sourceStatus === 'ACTIVE' ? '有效' : '已失效';
+          const operation = row.sourceStatus === 'ACTIVE'
+            ? `<button class="link" data-mapping-edit="${row.sourceCategoryId}">${isMapped ? '修改映射' : '设置映射'}</button>`
+            : '';
+          return `<article class="mapping-source-node ${isMapped ? 'mapped' : 'unmapped'} ${row.sourceStatus === 'INVALID' ? 'invalid' : ''}" data-mapping-row="${row.sourceCategoryId}" data-mapping-source-node="${row.sourceCategoryId}" tabindex="0" title="${escapeHtml(row.sourcePath)}"><div class="mapping-source-main"><div><div class="mapping-source-path">${escapeHtml(row.sourceName)}</div><div class="mapping-source-code">${escapeHtml(row.sourceCode)}</div></div><div class="mapping-source-meta">${tag(isMapped ? '已映射' : '未映射', isMapped ? 'success' : 'warning')}${tag(sourceStatusText,row.sourceStatus === 'ACTIVE' ? 'success' : 'danger')}</div></div><div class="mapping-source-foot"><button class="link mapping-product-count" data-mapping-product-link="${row.sourceCategoryId}">${row.productCount} 个产品</button><div class="mapping-source-actions">${operation}${isMapped ? `<button class="link" data-mapping-history="${row.sourceCategoryId}">查看历史</button>` : ''}</div></div></article>`;
+        }).join('');
+        return `<section class="mapping-source-group"><div class="mapping-source-parent"><button class="product-tree-expander ${collapsed ? 'collapsed' : ''}" data-mapping-source-toggle="${escapeHtml(groupKey)}" aria-label="${collapsed ? '展开' : '收起'}${escapeHtml(parentName)}" aria-expanded="${!collapsed}">${icon('i-chevron')}</button><span>${escapeHtml(parentName)}</span><span class="tree-count">${rows.length}</span></div><div class="mapping-source-children" data-mapping-source-children="${escapeHtml(groupKey)}" ${collapsed ? 'hidden' : ''}>${children}</div></section>`;
+      }).join('');
+      const body = groupNodes || '<div class="mapping-empty">当前查询条件下暂无来源分类</div>';
+      return `<section class="mapping-tree-panel mapping-source-tree" data-mapping-source-tree><div class="mapping-tree-head"><strong>${mappingSupplier().name}来源分类</strong><span>仅二级分类参与映射</span></div><div class="mapping-tree-body"><div class="mapping-source-groups">${body}</div></div></section>`;
+    }
+
+    function drawMappingRelations() {
+      const workspace = document.querySelector('[data-mapping-compare]');
+      const layer = workspace?.querySelector('[data-mapping-relations]');
+      if (!workspace || !layer) return;
+      const workspaceRect = workspace.getBoundingClientRect();
+      const relations = filteredMappingRows().filter(row => row.platformCategoryId).map(row => {
+        const sourceNode = workspace.querySelector(`[data-mapping-source-node="${row.sourceCategoryId}"]`);
+        const targetNode = workspace.querySelector(`[data-mapping-platform-node="${row.platformCategoryId}"]`);
+        if (!sourceNode || !targetNode || sourceNode.offsetParent === null || targetNode.offsetParent === null) return null;
+        const sourceRect = sourceNode.getBoundingClientRect();
+        const targetRect = targetNode.getBoundingClientRect();
+        const startX = sourceRect.left - workspaceRect.left;
+        const startY = sourceRect.top - workspaceRect.top + sourceRect.height / 2;
+        const endX = targetRect.right - workspaceRect.left;
+        const endY = targetRect.top - workspaceRect.top + targetRect.height / 2;
+        const controlOffset = Math.max(54, (startX - endX) * .34);
+        return {
+          row,
+          path: `M ${startX} ${startY} C ${startX - controlOffset} ${startY}, ${endX + controlOffset} ${endY}, ${endX} ${endY}`,
+          labelX: (startX + endX) / 2,
+          labelY: (startY + endY) / 2
+        };
+      }).filter(Boolean);
+      const paths = relations.map(({ row, path }) => `<path class="mapping-relation-path ${row.sourceStatus === 'INVALID' ? 'invalid' : ''}" data-mapping-relation="${row.sourceCategoryId}" data-relation-source="${row.sourceCategoryId}" d="${path}" marker-end="url(#${row.sourceStatus === 'INVALID' ? 'mapping-arrow-invalid' : 'mapping-arrow'})"></path>`).join('');
+      const labels = relations.map(({ row, labelX, labelY }) => `<span class="mapping-relation-label ${row.sourceStatus === 'INVALID' ? 'invalid' : ''}" data-mapping-product-count data-relation-source="${row.sourceCategoryId}" style="left:${labelX}px;top:${labelY}px">${row.productCount} 个产品</span>`).join('');
+      layer.innerHTML = `<svg aria-hidden="true" viewBox="0 0 ${workspaceRect.width} ${workspaceRect.height}" preserveAspectRatio="none"><defs><marker id="mapping-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#14A889"></path></marker><marker id="mapping-arrow-invalid" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#E24D5C"></path></marker></defs>${paths}</svg>${labels}`;
+    }
+
+    function setMappingRelationHighlight(sourceCategoryId = '') {
+      const workspace = document.querySelector('[data-mapping-compare]');
+      if (!workspace) return;
+      workspace.classList.toggle('relation-highlighting', Boolean(sourceCategoryId));
+      workspace.querySelectorAll('.relation-active').forEach(element => element.classList.remove('relation-active'));
+      if (!sourceCategoryId) return;
+      const row = findMappingRow(sourceCategoryId);
+      workspace.querySelector(`[data-mapping-source-node="${sourceCategoryId}"]`)?.classList.add('relation-active');
+      if (row?.platformCategoryId) workspace.querySelector(`[data-mapping-platform-node="${row.platformCategoryId}"]`)?.classList.add('relation-active');
+      workspace.querySelectorAll(`[data-relation-source="${sourceCategoryId}"]`).forEach(element => element.classList.add('relation-active'));
+    }
+
+    function categoryMappingPage() {
+      const supplier = mappingSupplier();
+      const records = filteredMappingRows();
+      const tabs = mappingSuppliers.map(item => {
+        const unmappedCount = mappingRows.filter(row => row.supplierId === item.id && !row.platformCategoryId).length;
+        return `<button class="quick-tab ${item.id === mappingViewState.supplierId ? 'active' : ''}" data-mapping-supplier-tab="${item.id}">${item.name}<span class="quick-tab-count">未映射 ${unmappedCount}</span></button>`;
+      }).join('');
+      const mappingOptions = [['ALL','全部映射状态'],['UNMAPPED','未映射'],['MAPPED','已映射']].map(([value,label]) => `<option value="${value}" ${mappingViewState.mappingStatus === value ? 'selected' : ''}>${label}</option>`).join('');
+      const sourceOptions = [['ALL','全部来源状态'],['ACTIVE','有效'],['INVALID','已失效']].map(([value,label]) => `<option value="${value}" ${mappingViewState.sourceStatus === value ? 'selected' : ''}>${label}</option>`).join('');
+      return `<div class="page-head"><p class="page-desc">${supplier.name} · 只映射来源二级分类；关系变更动态生效，不迁移商品表</p><div class="page-actions"><button class="btn" data-mapping-import-history>导入记录</button><button class="btn" onclick="toast('${supplier.name} 映射关系已导出')">${icon('i-download')}导出关系</button><button class="btn primary" data-mapping-import>${icon('i-plus')}导入映射</button></div></div>
+        <div class="quick-tabs" aria-label="供货平台分类映射">${tabs}</div>
+        ${queryToolbar(`<input class="field search" data-mapping-keyword value="${escapeHtml(mappingViewState.keyword)}" placeholder="搜索来源编码、来源或平台分类"><select class="field" data-mapping-status-filter>${mappingOptions}</select><select class="field" data-mapping-source-status-filter>${sourceOptions}</select>`)}
+        <section class="mapping-compare" data-mapping-compare>${renderMappingPlatformTree(records)}<div class="mapping-relation-column"><span>映射关系 · 产品数量</span></div>${renderMappingSourceTree(records)}<div class="mapping-relations" data-mapping-relations></div></section>
+        ${renderMappingModal()}${renderMappingImportModal()}`;
+    }
+
+    function syncMappingPlatformChild(selectedChildId = '') {
+      const modal = document.querySelector('[data-mapping-modal]');
+      if (!modal) return;
+      const parentId = modal.querySelector('[data-mapping-platform-parent]').value;
+      const childSelect = modal.querySelector('[data-mapping-platform-child]');
+      const parent = categoryData.find(item => item.id === parentId);
+      const options = (parent?.children || []).filter(child => child.status === '启用').map(child => `<option value="${child.id}">${child.name}</option>`).join('');
+      childSelect.innerHTML = `<option value="">请选择二级分类</option>${options}`;
+      childSelect.disabled = !parentId;
+      if (selectedChildId && childSelect.querySelector(`option[value="${selectedChildId}"]`)) childSelect.value = selectedChildId;
+    }
+
+    function openMappingEditor(sourceCategoryId) {
+      const row = findMappingRow(sourceCategoryId);
+      const modal = document.querySelector('[data-mapping-modal]');
+      if (!row || !modal) return;
+      modal.dataset.sourceCategoryId = sourceCategoryId;
+      modal.dataset.rowVersion = String(row.rowVersion);
+      modal.querySelector('[data-mapping-modal-title]').textContent = row.platformCategoryId ? '修改分类映射' : '设置分类映射';
+      modal.querySelector('[data-mapping-editor-body]').hidden = false;
+      modal.querySelector('[data-mapping-history-body]').hidden = true;
+      modal.querySelector('[data-mapping-unbind-confirmation]').hidden = true;
+      modal.querySelector('[data-mapping-source-name]').textContent = row.sourceName;
+      modal.querySelector('[data-mapping-source-code]').textContent = row.sourceCode;
+      modal.querySelector('[data-mapping-source-path]').textContent = row.sourcePath;
+      modal.querySelector('[data-mapping-product-count]').textContent = `${row.productCount} 个`;
+      modal.querySelector('[data-mapping-current-target]').textContent = platformCategoryPath(row.platformCategoryId);
+      const currentCategory = findCategory(row.platformCategoryId);
+      modal.querySelector('[data-mapping-platform-parent]').value = currentCategory.parent?.id || '';
+      syncMappingPlatformChild(row.platformCategoryId || '');
+      modal.querySelector('[data-mapping-unbind]').hidden = !row.platformCategoryId;
+      modal.hidden = false;
+    }
+
+    function closeMappingModal() {
+      const modal = document.querySelector('[data-mapping-modal]');
+      if (modal) modal.hidden = true;
+    }
+
+    function saveMappingEditor() {
+      const modal = document.querySelector('[data-mapping-modal]');
+      const row = findMappingRow(modal?.dataset.sourceCategoryId);
+      if (!modal || !row) return;
+      if (Number(modal.dataset.rowVersion) !== row.rowVersion) return toast('映射已被更新，请刷新后重试');
+      const targetId = modal.querySelector('[data-mapping-platform-child]').value;
+      const target = findCategory(targetId).category;
+      if (!targetId || !target || target.level !== 2 || target.status !== '启用') return toast('请选择启用中的平台二级分类');
+      const before = platformCategoryPath(row.platformCategoryId);
+      row.platformCategoryId = targetId;
+      row.rowVersion += 1;
+      row.updatedAt = '08-14 15:46';
+      row.history.unshift({ action: before === '—' ? '新增映射' : '修改映射', before, after: platformCategoryPath(targetId), source: '手工操作', operator: '平台运营员', time: row.updatedAt, productCount: row.productCount });
+      render('category-mapping');
+      toast('分类映射已生效');
+    }
+
+    function requestUnbindMapping() {
+      const modal = document.querySelector('[data-mapping-modal]');
+      if (!modal) return;
+      modal.querySelector('[data-mapping-editor-body]').hidden = true;
+      modal.querySelector('[data-mapping-unbind-confirmation]').hidden = false;
+    }
+
+    function confirmUnbindMapping() {
+      const modal = document.querySelector('[data-mapping-modal]');
+      const row = findMappingRow(modal?.dataset.sourceCategoryId);
+      if (!modal || !row) return;
+      if (Number(modal.dataset.rowVersion) !== row.rowVersion) return toast('映射已被更新，请刷新后重试');
+      const before = platformCategoryPath(row.platformCategoryId);
+      row.platformCategoryId = null;
+      row.rowVersion += 1;
+      row.updatedAt = '08-14 15:48';
+      row.history.unshift({ action: '解除映射', before, after: '—', source: '手工操作', operator: '平台运营员', time: row.updatedAt, productCount: row.productCount });
+      render('category-mapping');
+      toast('映射已解除，相关商品已进入待映射视图');
+    }
+
+    function openMappingHistory(sourceCategoryId) {
+      const row = findMappingRow(sourceCategoryId);
+      const modal = document.querySelector('[data-mapping-modal]');
+      if (!row || !modal) return;
+      modal.querySelector('[data-mapping-modal-title]').textContent = `${row.sourceName} · 映射历史`;
+      modal.querySelector('[data-mapping-editor-body]').hidden = true;
+      modal.querySelector('[data-mapping-unbind-confirmation]').hidden = true;
+      const historyBody = modal.querySelector('[data-mapping-history-body]');
+      historyBody.hidden = false;
+      const history = row.history.length ? row.history : [{ action: '暂无变更', before: '—', after: '—', source: '系统记录', operator: '系统', time: row.updatedAt, productCount: row.productCount }];
+      historyBody.querySelector('[data-mapping-history-list]').innerHTML = `<div class="table-card" style="margin-top:0"><table class="data-table"><thead><tr><th>操作类型</th><th>变更前</th><th>变更后</th><th>操作来源</th><th>操作人</th><th>时间</th><th>影响商品</th></tr></thead><tbody>${history.map(item => `<tr><td>${item.action}</td><td>${item.before}</td><td>${item.after}</td><td>${item.source}</td><td>${item.operator}</td><td>${item.time}</td><td>${item.productCount}</td></tr>`).join('')}</tbody></table></div>`;
+      modal.hidden = false;
+    }
+
+    function resetMappingImportModal(mode = 'upload') {
+      const modal = document.querySelector('[data-mapping-import-modal]');
+      if (!modal) return;
+      modal.querySelector('[data-mapping-import-title]').textContent = mode === 'history' ? `${mappingSupplier().name} · 导入记录` : '导入分类映射';
+      modal.querySelector('[data-mapping-import-supplier]').textContent = `${mappingSupplier().name}（${mappingSupplier().id}）`;
+      modal.querySelector('[data-mapping-import-upload]').hidden = mode !== 'upload';
+      modal.querySelector('[data-mapping-import-preview-body]').hidden = true;
+      modal.querySelector('[data-mapping-import-result]').hidden = true;
+      modal.querySelector('[data-mapping-import-history-body]').hidden = mode !== 'history';
+      modal.hidden = false;
+    }
+
+    const supplierSourceViewState = { supplierId: 'JX', platformName: '京选集采', sourceCategoryId: '', sourceCategoryPath: '', aggregationStatus: 'ALL', returnView: 'suppliers' };
+    const supplierSourceProducts = [
+      { supplierId: 'JX', sourceCategoryId: 'JX-PAPER', code: 'JX-882601', name: 'A4 复印纸 70g 5包装', sourcePath: '办公用品 / 办公纸品', sku: 'JX-SKU-601', cost: '¥ 80.00', stock: '568', aggregation: '已归集', syncedAt: '10 分钟前', syncResult: '同步成功' },
+      { supplierId: 'JX', sourceCategoryId: 'JX-KEYBOARD', code: 'JX-882586', name: '无线蓝牙键盘 K3', sourcePath: '数码设备 / 键盘', sku: 'JX-SKU-586', cost: '¥ 176.00', stock: '83', aggregation: '已归集', syncedAt: '10 分钟前', syncResult: '同步成功' },
+      { supplierId: 'JX', sourceCategoryId: 'JX-POWER', code: 'JX-882572', name: '便携充电宝 10000mAh', sourcePath: '数码设备 / 电源', sku: 'JX-SKU-572', cost: '¥ 96.00', stock: '0', aggregation: '待归集', syncedAt: '10 分钟前', syncResult: '库存不足' },
+      { supplierId: 'JX', sourceCategoryId: 'JX-MEETING', code: 'JX-882548', name: '会议平板 65 英寸', sourcePath: '数码设备 / 会议平板', sku: 'JX-SKU-548', cost: '¥ 4,680.00', stock: '12', aggregation: '待映射', syncedAt: '10 分钟前', syncResult: '等待分类映射' },
+      { supplierId: 'QCY', sourceCategoryId: 'QCY-CUP', code: 'QCY-11628', name: '商务保温杯 480ml', sourcePath: '员工福利 / 水杯', sku: 'QCY-SKU-628', cost: '¥ 58.00', stock: '226', aggregation: '已归集', syncedAt: '18 分钟前', syncResult: '同步成功' },
+      { supplierId: 'QCY', sourceCategoryId: 'QCY-BACKPACK', code: 'QCY-11482', name: '轻量商务双肩包', sourcePath: '箱包服饰 / 商务双肩包', sku: 'QCY-SKU-482', cost: '¥ 112.00', stock: '64', aggregation: '待映射', syncedAt: '18 分钟前', syncResult: '等待分类映射' },
+      { supplierId: 'HC', sourceCategoryId: 'HC-OFFICE', code: 'HC-30216', name: '办公耗材组合装', sourcePath: '办公集采 / 通用耗材', sku: 'HC-SKU-216', cost: '¥ 138.00', stock: '102', aggregation: '已归集', syncedAt: '2 小时前', syncResult: '同步成功' }
+    ];
+
+    function supplierSourceProductsPage() {
+      const { supplierId, platformName, sourceCategoryId, sourceCategoryPath, aggregationStatus } = supplierSourceViewState;
+      const currentRows = supplierSourceProducts.filter(item => item.supplierId === supplierId)
+        .filter(item => !sourceCategoryId || item.sourceCategoryId === sourceCategoryId)
+        .filter(item => aggregationStatus === 'ALL' || item.aggregation === aggregationStatus);
+      const body = currentRows.length ? currentRows.map(item => {
+        const mappingRow = findMappingRow(item.sourceCategoryId);
+        const mappingText = mappingRow?.platformCategoryId ? platformCategoryPath(mappingRow.platformCategoryId) : '未映射';
+        return `<tr><td><button class="link" onclick="toast('已打开来源商品 ${item.code}')">${item.code}</button></td><td>${item.name}</td><td>${item.sourcePath}</td><td>${item.sku}</td><td class="money">${item.cost}</td><td>${item.stock}</td><td>${mappingText}</td><td>${tag(item.aggregation,item.aggregation === '已归集' ? 'success' : item.aggregation === '待映射' ? 'danger' : 'warning')}</td><td>${item.syncedAt}</td><td>${tag(item.syncResult,toneFor(item.syncResult))}</td><td><div class="row-actions"><button class="link" onclick="toast('已打开 ${item.code} 来源详情')">查看详情</button><button class="link" onclick="toast('已重新同步 ${item.code}')">重新同步</button><button class="link" onclick="toast('已打开 ${item.code} 分类映射')">查看映射</button></div></td></tr>`;
+      }).join('') : `<tr><td colspan="11" class="muted" style="height:96px;text-align:center">当前条件下暂无来源商品</td></tr>`;
+      const sourcePathText = sourceCategoryPath || '全部来源分类';
+      const aggregationOptions = [['ALL','全部归集状态'],['已归集','已归集'],['待归集','待归集'],['待映射','待映射']].map(([value,label]) => `<option value="${value}" ${aggregationStatus === value ? 'selected' : ''}>${label}</option>`).join('');
+      return `<div data-supplier-source-page><div class="page-head"><p class="page-desc">${platformName} · 当前来源分类：${sourcePathText} · ${aggregationStatus === 'ALL' ? '全部归集状态' : aggregationStatus}</p><div class="page-actions"><button class="btn" data-supplier-source-back>返回${supplierSourceViewState.returnView === 'category-mapping' ? '分类映射' : '供货平台'}</button><button class="btn primary" onclick="toast('已发起 ${platformName} 商品同步')">${icon('i-sync')}同步来源商品</button></div></div>
+        <div class="tree-layout"><aside class="tree"><div class="tree-title">来源两级分类 · ${platformName}</div><input class="field tree-search" placeholder="搜索来源分类"><div class="tree-node ${sourceCategoryId ? '' : 'active'}">全部来源商品 <span class="tree-count">${supplierSourceProducts.filter(item => item.supplierId === supplierId).length}</span></div><div class="tree-node">⌄ 办公用品</div><div class="tree-node l2">办公纸品</div><div class="tree-node">⌄ 数码设备</div><div class="tree-node l2 ${sourceCategoryId === 'JX-MEETING' ? 'active' : ''}">会议平板</div></aside>
+        <section class="detail-panel">${queryToolbar(`<span class="product-current-category">来源分类：<strong>${sourcePathText}</strong></span><input class="field search" placeholder="搜索商品名称或来源编码"><select class="field" data-source-aggregation-filter>${aggregationOptions}</select><select class="field"><option>全部同步结果</option><option>同步成功</option><option>库存不足</option><option>等待分类映射</option></select>`)}<div class="table-card"><div style="overflow:auto"><table class="data-table"><thead><tr><th>来源商品编码</th><th>商品名称</th><th>来源分类</th><th>来源SKU</th><th>最新采购价</th><th>库存</th><th>分类映射</th><th>平台商品归集状态</th><th>最近同步</th><th>同步结果</th><th>操作</th></tr></thead><tbody>${body}</tbody></table></div>${pagination(String(currentRows.length))}</div></section></div></div>`;
+    }
+
+    const pageRenderers = {
+      dashboard,
+      'channel-analysis': channelAnalysisPage,
+      'mini-orders': () => orderListPage('mini-orders'),
+      'api-orders': () => orderListPage('api-orders'),
+      category: categoryPage,
+      products: productPage,
+      suppliers: suppliersPage,
+      'category-mapping': categoryMappingPage,
+      'supplier-source-products': supplierSourceProductsPage,
+      'system-users': systemUsersPage,
+      'system-roles': systemRolesPage,
+      'system-api-docs': systemApiDocsPage
+    };
+    const render = view => {
+      if (view === 'sourcing-products') {
+        productViewState.source = '集采';
+        render('products');
+        toast('原集采商品入口已合并至商品管理');
+        return;
+      }
+      if (view === 'channel-analysis' && currentView !== 'channel-analysis') analysisViewState.channel = 'mini';
+      const content = document.getElementById('content');
+      content.innerHTML = pageRenderers[view] ? pageRenderers[view]() : listPage(view);
+      const navigationView = view === 'supplier-source-products' ? supplierSourceViewState.returnView : view;
+      const current = document.querySelector(`.nav-item[data-view="${navigationView}"]`);
+      document.querySelectorAll('.nav-item').forEach(element => element.classList.remove('active'));
+      current?.classList.add('active');
+      document.getElementById('crumbCurrent').textContent = view === 'supplier-source-products' ? `${navigationView === 'category-mapping' ? '分类映射' : '供货平台'} / 来源商品` : current?.textContent || '经营总览';
+      content.querySelectorAll('[data-analysis-tab]').forEach(element => element.addEventListener('click', () => {
+        if (analysisViewState.channel === element.dataset.analysisTab) return;
+        analysisViewState.channel = element.dataset.analysisTab;
+        render('channel-analysis');
+      }));
+      content.querySelector('[data-analysis-period]')?.addEventListener('change', event => {
+        analysisViewState.period = event.target.value;
+        toast(`已切换为${analysisViewState.period}数据`);
+      });
+      content.querySelector('[data-analysis-export]')?.addEventListener('click', () => {
+        toast(`已导出${analysisData[analysisViewState.channel].tabLabel}${analysisViewState.period}报表`);
+      });
+      content.querySelectorAll('[data-goto]').forEach(element => element.addEventListener('click', () => render(element.dataset.goto)));
+      content.querySelectorAll('[data-order-status-tab]').forEach(element => element.addEventListener('click', () => {
+        orderViewStates[view].aggregateStatus = element.dataset.orderStatusTab;
+        render(view);
+        toast(`已切换到${element.textContent.replace(/\d+/g, '').trim()}订单`);
+      }));
+      content.querySelectorAll('[data-order-action]:not(:disabled)').forEach(element => element.addEventListener('click', () => {
+        openOrderActionModal(element.dataset.orderAction, element.dataset.orderView, element.dataset.orderId);
+      }));
+      content.querySelectorAll('[data-order-action-close]').forEach(element => element.addEventListener('click', closeOrderActionModal));
+      content.querySelector('[data-order-action-submit]')?.addEventListener('click', submitOrderAction);
+      content.querySelector('[data-query-submit]')?.addEventListener('click', () => {
+        if (view === 'products') {
+          productViewState.keyword = content.querySelector('[data-product-keyword]').value.trim();
+          productViewState.source = content.querySelector('[data-product-source]').value;
+          productViewState.status = content.querySelector('[data-product-status]').value;
+          render(view);
+        } else if (orderViewStates[view]) {
+          orderViewStates[view].keyword = content.querySelector('[data-order-keyword]').value.trim();
+          render(view);
+        } else if (view === 'system-users') {
+          userViewState.keyword = content.querySelector('[data-user-keyword]').value.trim();
+          userViewState.roleId = content.querySelector('[data-user-role-filter]').value;
+          userViewState.status = content.querySelector('[data-user-status-filter]').value;
+          render(view);
+        } else if (view === 'system-roles') {
+          roleViewState.keyword = content.querySelector('[data-role-keyword]').value.trim();
+          roleViewState.status = content.querySelector('[data-role-status-filter]').value;
+          render(view);
+        } else if (view === 'category-mapping') {
+          mappingViewState.keyword = content.querySelector('[data-mapping-keyword]').value.trim();
+          mappingViewState.mappingStatus = content.querySelector('[data-mapping-status-filter]').value;
+          mappingViewState.sourceStatus = content.querySelector('[data-mapping-source-status-filter]').value;
+          render(view);
+        } else if (view === 'supplier-source-products') {
+          supplierSourceViewState.aggregationStatus = content.querySelector('[data-source-aggregation-filter]').value;
+          render(view);
+        }
+        toast('已按当前条件查询');
+      });
+      content.querySelector('[data-query-reset]')?.addEventListener('click', () => {
+        if (view === 'products') {
+          productViewState.keyword = '';
+          productViewState.source = 'all';
+          productViewState.status = 'all';
+        } else if (orderViewStates[view]) {
+          orderViewStates[view].keyword = '';
+        } else if (view === 'system-users') {
+          Object.assign(userViewState, { keyword: '', roleId: 'ALL', status: 'ALL' });
+        } else if (view === 'system-roles') {
+          Object.assign(roleViewState, { keyword: '', status: 'ALL' });
+        } else if (view === 'category-mapping') {
+          Object.assign(mappingViewState, { keyword: '', mappingStatus: 'ALL', sourceStatus: 'ALL' });
+        } else if (view === 'supplier-source-products') {
+          supplierSourceViewState.aggregationStatus = 'ALL';
+        }
+        render(view);
+        toast('查询条件已重置，列表已刷新');
+      });
+      content.querySelectorAll('.page-btn[data-page]').forEach(element => element.addEventListener('click', () => {
+        content.querySelectorAll('.page-btn[data-page]').forEach(item => item.classList.remove('active'));
+        element.classList.add('active');
+        toast(`已切换到第 ${element.dataset.page} 页`);
+      }));
+      content.querySelectorAll('[data-switch]').forEach(element => element.addEventListener('click', () => {
+        element.classList.toggle('on');
+        const label = element.nextElementSibling;
+        if (label) label.textContent = element.classList.contains('on') ? '已开启' : '已关闭';
+        toast('渠道展示开关已更新');
+      }));
+      content.querySelectorAll('[data-supplier-sources]').forEach(element => element.addEventListener('click', () => {
+        const supplier = mappingSuppliers.find(item => item.name === element.dataset.supplierSources) || mappingSuppliers[0];
+        Object.assign(supplierSourceViewState, { supplierId: supplier.id, platformName: supplier.name, sourceCategoryId: '', sourceCategoryPath: '', aggregationStatus: 'ALL', returnView: 'suppliers' });
+        render('supplier-source-products');
+      }));
+      content.querySelector('[data-supplier-source-back]')?.addEventListener('click', () => render(supplierSourceViewState.returnView));
+      content.querySelectorAll('[data-mapping-supplier-tab]').forEach(element => element.addEventListener('click', () => {
+        Object.assign(mappingViewState, { supplierId: element.dataset.mappingSupplierTab, keyword: '', mappingStatus: 'ALL', sourceStatus: 'ALL' });
+        render('category-mapping');
+        toast(`已切换至${mappingSupplier().name}`);
+      }));
+      content.querySelectorAll('[data-mapping-platform-toggle]').forEach(element => element.addEventListener('click', () => {
+        const categoryId = element.dataset.mappingPlatformToggle;
+        if (mappingViewState.collapsedPlatformIds.has(categoryId)) mappingViewState.collapsedPlatformIds.delete(categoryId);
+        else mappingViewState.collapsedPlatformIds.add(categoryId);
+        render('category-mapping');
+      }));
+      content.querySelectorAll('[data-mapping-source-toggle]').forEach(element => element.addEventListener('click', () => {
+        const groupKey = element.dataset.mappingSourceToggle;
+        if (mappingViewState.collapsedSourceGroupKeys.has(groupKey)) mappingViewState.collapsedSourceGroupKeys.delete(groupKey);
+        else mappingViewState.collapsedSourceGroupKeys.add(groupKey);
+        render('category-mapping');
+      }));
+      content.querySelectorAll('[data-mapping-source-node]').forEach(element => {
+        const sourceCategoryId = element.dataset.mappingSourceNode;
+        element.addEventListener('mouseenter', () => setMappingRelationHighlight(sourceCategoryId));
+        element.addEventListener('mouseleave', () => setMappingRelationHighlight());
+        element.addEventListener('focusin', () => setMappingRelationHighlight(sourceCategoryId));
+        element.addEventListener('focusout', () => setMappingRelationHighlight());
+      });
+      content.querySelector('[data-api-doc-preview]')?.addEventListener('click', () => window.open(publicApiDocUrl(), '_blank', 'noopener'));
+      content.querySelector('[data-api-doc-copy]')?.addEventListener('click', copyPublicApiDocUrl);
+      content.querySelectorAll('[data-mapping-edit]').forEach(element => element.addEventListener('click', () => openMappingEditor(element.dataset.mappingEdit)));
+      content.querySelectorAll('[data-mapping-history]').forEach(element => element.addEventListener('click', () => openMappingHistory(element.dataset.mappingHistory)));
+      content.querySelectorAll('[data-mapping-modal-close]').forEach(element => element.addEventListener('click', closeMappingModal));
+      content.querySelector('[data-mapping-platform-parent]')?.addEventListener('change', () => syncMappingPlatformChild());
+      content.querySelector('[data-mapping-save]')?.addEventListener('click', saveMappingEditor);
+      content.querySelector('[data-mapping-unbind]')?.addEventListener('click', requestUnbindMapping);
+      content.querySelector('[data-mapping-unbind-cancel]')?.addEventListener('click', () => {
+        content.querySelector('[data-mapping-unbind-confirmation]').hidden = true;
+        content.querySelector('[data-mapping-editor-body]').hidden = false;
+      });
+      content.querySelector('[data-mapping-unbind-confirm]')?.addEventListener('click', confirmUnbindMapping);
+      content.querySelectorAll('[data-mapping-product-link]').forEach(element => element.addEventListener('click', () => {
+        const row = findMappingRow(element.dataset.mappingProductLink);
+        if (!row) return;
+        const supplier = mappingSupplier(row.supplierId);
+        Object.assign(supplierSourceViewState, { supplierId: supplier.id, platformName: supplier.name, sourceCategoryId: row.sourceCategoryId, sourceCategoryPath: row.sourcePath, aggregationStatus: row.platformCategoryId ? 'ALL' : '待映射', returnView: 'category-mapping' });
+        render('supplier-source-products');
+      }));
+      content.querySelector('[data-mapping-import]')?.addEventListener('click', () => resetMappingImportModal('upload'));
+      content.querySelector('[data-mapping-import-history]')?.addEventListener('click', () => resetMappingImportModal('history'));
+      content.querySelector('[data-mapping-import-close]')?.addEventListener('click', () => {
+        content.querySelector('[data-mapping-import-modal]').hidden = true;
+      });
+      content.querySelector('[data-mapping-import-preview]')?.addEventListener('click', () => {
+        content.querySelector('[data-mapping-import-upload]').hidden = true;
+        content.querySelector('[data-mapping-import-preview-body]').hidden = false;
+      });
+      content.querySelector('[data-mapping-import-back]')?.addEventListener('click', () => {
+        content.querySelector('[data-mapping-import-preview-body]').hidden = true;
+        content.querySelector('[data-mapping-import-upload]').hidden = false;
+      });
+      content.querySelector('[data-mapping-import-execute]')?.addEventListener('click', () => {
+        content.querySelector('[data-mapping-import-preview-body]').hidden = true;
+        content.querySelector('[data-mapping-import-result]').hidden = false;
+      });
+      content.querySelectorAll('[data-product-category]').forEach(element => element.addEventListener('click', () => {
+        productViewState.selectedCategoryId = element.dataset.productCategory;
+        render('products');
+        toast(`已查询${getSelectedProductCategory().name}分类商品`);
+      }));
+      content.querySelectorAll('[data-product-tree-toggle]').forEach(element => element.addEventListener('click', () => {
+        const categoryId = element.dataset.productTreeToggle;
+        const children = content.querySelector(`[data-product-tree-children="${categoryId}"]`);
+        const willExpand = children.hidden;
+        children.hidden = !willExpand;
+        element.classList.toggle('collapsed', !willExpand);
+        element.setAttribute('aria-expanded', String(willExpand));
+        if (willExpand) productViewState.expandedCategoryIds.add(categoryId);
+        else productViewState.expandedCategoryIds.delete(categoryId);
+      }));
+      content.querySelectorAll('[data-category-toggle]').forEach(element => element.addEventListener('click', () => toggleCategory(element.dataset.categoryToggle)));
+      content.querySelectorAll('[data-category-edit]').forEach(element => element.addEventListener('click', () => openCategoryEditor(element.dataset.categoryEdit)));
+      content.querySelector('[data-category-add]')?.addEventListener('click', () => openCategoryEditor());
+      content.querySelector('[data-category-modal] [name="categoryLevel"]')?.addEventListener('change', syncCategoryLevelFields);
+      content.querySelectorAll('[data-category-modal-close]').forEach(element => element.addEventListener('click', closeCategoryEditor));
+      content.querySelector('[data-category-save]')?.addEventListener('click', saveCategoryEditor);
+      content.querySelectorAll('[data-category-status]').forEach(element => element.addEventListener('click', () => toggleCategoryStatus(element.dataset.categoryStatus)));
+      content.querySelectorAll('[data-category-delete]').forEach(element => element.addEventListener('click', () => deleteCategory(element.dataset.categoryDelete)));
+      content.querySelector('[data-user-add]')?.addEventListener('click', () => openUserEditor());
+      content.querySelectorAll('[data-user-edit]').forEach(element => element.addEventListener('click', () => openUserEditor(element.dataset.userEdit)));
+      content.querySelectorAll('[data-user-modal-close]').forEach(element => element.addEventListener('click', closeUserEditor));
+      content.querySelector('[data-user-save]')?.addEventListener('click', saveUserEditor);
+      content.querySelectorAll('[data-user-status]').forEach(element => element.addEventListener('click', () => toggleSystemUser(element.dataset.userStatus)));
+      content.querySelectorAll('[data-user-reset-password]').forEach(element => element.addEventListener('click', () => toast('密码已重置，首次登录需修改')));
+      content.querySelector('[data-role-add]')?.addEventListener('click', () => openRoleEditor());
+      content.querySelectorAll('[data-role-edit]').forEach(element => element.addEventListener('click', () => openRoleEditor(element.dataset.roleEdit)));
+      content.querySelectorAll('[data-role-modal-close]').forEach(element => element.addEventListener('click', closeRoleEditor));
+      content.querySelector('[data-role-save]')?.addEventListener('click', saveRoleEditor);
+      content.querySelectorAll('[data-role-status]').forEach(element => element.addEventListener('click', () => toggleSystemRole(element.dataset.roleStatus)));
+      content.querySelectorAll('[data-permission-parent]').forEach(element => element.addEventListener('change', () => {
+        content.querySelectorAll(`[data-permission-child][data-permission-module="${element.dataset.permissionParent}"]`).forEach(child => child.checked = element.checked);
+        element.indeterminate = false;
+      }));
+      content.querySelectorAll('[data-permission-child]').forEach(element => element.addEventListener('change', () => syncPermissionParent(element.dataset.permissionModule)));
+      currentView = view;
+      if (view === 'category-mapping') drawMappingRelations();
+    };
+    window.addEventListener('resize', () => {
+      if (currentView === 'category-mapping') requestAnimationFrame(drawMappingRelations);
+    });
+    document.querySelectorAll('.nav-item').forEach(item => item.addEventListener('click', () => render(item.dataset.view)));
+    document.querySelectorAll('.nav-parent').forEach(parent => parent.addEventListener('click', () => parent.closest('.nav-group').classList.toggle('collapsed')));
+    render('dashboard');
+  </script>
+</body>
+</html>

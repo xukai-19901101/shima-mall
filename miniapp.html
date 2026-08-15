@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>拾马商城 · 企业积分商城</title>
+  <style>
+    :root {
+      --brand: #315CF5;
+      --brand-dark: #2445BE;
+      --ink: #14233B;
+      --ink-2: #35445D;
+      --muted: #718096;
+      --line: #E4E9F1;
+      --surface: #FFFFFF;
+      --canvas: #F4F6FA;
+      --success: #14A889;
+      --warning: #E89A28;
+      --danger: #E24D5C;
+      --nav: #101B32;
+      --shadow: 0 10px 30px rgba(20, 35, 59, .09);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: #DDE3ED; }
+    body {
+      margin: 0;
+      min-height: 100%;
+      color: var(--ink);
+      background: #DDE3ED;
+      font-family: Inter, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible { outline: 3px solid rgba(49,92,245,.22); outline-offset: 2px; }
+    svg { display: block; }
+    .ico { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .phone {
+      width: min(100%, 430px);
+      min-height: 100vh;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+      background: var(--canvas);
+      box-shadow: 0 0 0 1px rgba(20,35,59,.05), 0 25px 80px rgba(20,35,59,.18);
+    }
+    .statusbar {
+      height: 30px;
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      color: white;
+      background: var(--nav);
+      font-size: 11px;
+      font-weight: 650;
+    }
+    .status-icons { margin-left: auto; display: flex; align-items: center; gap: 5px; }
+    .signal { display: flex; align-items: end; gap: 2px; height: 10px; }
+    .signal i { width: 2px; background: white; border-radius: 1px; }
+    .signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}
+    .battery { width: 17px; height: 8px; border: 1px solid white; border-radius: 2px; padding: 1px; position: relative; }
+    .battery::before { content:""; display:block; height:100%; width:75%; background:white; }
+    .battery::after { content:""; position:absolute; right:-3px; top:2px; width:2px; height:4px; background:white; border-radius:0 1px 1px 0; }
+    .screen { display: none; min-height: calc(100vh - 30px); padding-bottom: 82px; animation: enter .2s ease; }
+    .screen.active { display: block; }
+    @keyframes enter { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+    .hero {
+      padding: 15px 18px 28px;
+      color: white;
+      background: var(--nav);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -60px;
+      top: -80px;
+      width: 210px;
+      height: 210px;
+      border: 42px solid rgba(49,92,245,.34);
+      border-radius: 50%;
+    }
+    .mini-head { height: 40px; display: flex; align-items: center; position: relative; z-index: 1; }
+    .company { font-size: 16px; font-weight: 760; letter-spacing: -.01em; }
+    .mini-identity { display: flex; flex-direction: column; gap: 2px; }
+    .mini-identity small { color: #9EABC1; font-size: 10px; }
+    .switch { margin-left: 6px; color: #AAB6C9; }
+    .head-actions { margin-left: auto; display: flex; gap: 11px; }
+    .head-btn { width: 30px; height: 30px; display: grid; place-items: center; color: #D9E1EF; background: rgba(255,255,255,.08); border: 0; border-radius: 8px; cursor: pointer; }
+    .head-btn .ico { width: 18px; height: 18px; }
+    .balance-card { margin-top: 12px; position: relative; z-index: 1; }
+    .balance-label { color: #9CAAC0; font-size: 12px; }
+    .balance-value { margin-top: 5px; font-size: 36px; line-height: 1.15; font-weight: 780; letter-spacing: -.045em; }
+    .balance-value small { margin-left: 5px; font-size: 13px; font-weight: 600; letter-spacing: 0; }
+    .balance-meta { margin-top: 10px; display: flex; align-items: center; gap: 8px; color: #B9C3D4; font-size: 11px; }
+    .rate { padding: 4px 7px; color: #CFE9E4; background: rgba(20,168,137,.16); border-radius: 5px; }
+    .search {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: -12px 16px 0;
+      padding: 0 13px;
+      position: relative;
+      z-index: 3;
+      color: var(--muted);
+      background: white;
+      border: 1px solid rgba(20,35,59,.05);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+    }
+    .search .ico { width: 19px; height: 19px; }
+    .search input { width: 100%; border: 0; outline: 0; color: var(--ink); background: transparent; }
+    .content { padding: 17px 16px 22px; }
+    .quick-cats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+    .cat { border: 0; background: transparent; cursor: pointer; padding: 0; }
+    .cat-icon { width: 48px; height: 48px; display: grid; place-items: center; margin: 0 auto; color: var(--brand); background: #EBEFFF; border-radius: 14px 14px 6px 14px; }
+    .cat:nth-child(2) .cat-icon { color: var(--success); background: #E7F7F3; }
+    .cat:nth-child(3) .cat-icon { color: var(--warning); background: #FFF2DC; }
+    .cat:nth-child(4) .cat-icon { color: #7C5CE7; background: #F0ECFF; }
+    .cat span { display: block; margin-top: 7px; font-size: 12px; }
+    .notice {
+      min-height: 39px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 19px;
+      padding: 0 11px;
+      color: #52627A;
+      background: #EDF1F8;
+      border-left: 3px solid var(--brand);
+      font-size: 11px;
+    }
+    .notice .ico { width: 16px; height: 16px; color: var(--brand); }
+    .section-head { display: flex; align-items: baseline; margin: 22px 0 12px; }
+    .section-title { font-size: 17px; font-weight: 780; letter-spacing: -.02em; }
+    .section-sub { margin-left: 8px; color: var(--muted); font-size: 11px; }
+    .more { margin-left: auto; padding: 0; color: var(--muted); background: none; border: 0; font-size: 11px; cursor: pointer; }
+    .product-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 11px; }
+    .product-card { overflow: hidden; padding: 0; text-align: left; background: white; border: 1px solid #EBEEF4; border-radius: var(--radius); cursor: pointer; }
+    .product-card:active { transform: scale(.985); }
+    .product-visual {
+      height: 142px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      color: var(--visual-color, var(--brand));
+      background: var(--visual-bg, #EDF1FF);
+      overflow: hidden;
+    }
+    .product-visual::before { content:""; position:absolute; width:110px; height:110px; border:1px solid color-mix(in srgb, var(--visual-color) 23%, transparent); border-radius:50%; }
+    .product-visual::after { content:""; position:absolute; width:65px; height:65px; border:12px solid color-mix(in srgb, var(--visual-color) 8%, transparent); border-radius:50%; right:-16px; top:-16px; }
+    .product-visual .ico { width: 61px; height: 61px; stroke-width: 1.25; position:relative; z-index:1; }
+    .stock-flag { position:absolute; left:9px; top:9px; z-index:2; padding:3px 6px; color:#08715D; background:rgba(255,255,255,.87); border-radius:4px; font-size:10px; }
+    .product-info { padding: 11px 11px 12px; }
+    .product-name { height: 38px; overflow: hidden; color: var(--ink); font-size: 13px; line-height: 19px; font-weight: 630; }
+    .product-spec { margin-top: 4px; color: var(--muted); font-size: 10px; }
+    .points { margin-top: 9px; color: var(--brand); font-size: 17px; font-weight: 780; }
+    .points small { margin-left: 3px; font-size: 10px; font-weight: 650; }
+    .equiv { margin-left: 5px; color: var(--muted); font-size: 9px; font-weight: 500; }
+
+    .plain-head { height: 52px; display: flex; align-items: center; padding: 0 17px; background: white; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+    .plain-title { font-size: 17px; font-weight: 760; }
+    .back { width: 34px; height: 34px; display: grid; place-items: center; margin-left: -8px; margin-right: 3px; background: transparent; border: 0; cursor: pointer; }
+    .back .ico { transform: rotate(90deg); }
+    .plain-action { margin-left: auto; color: var(--brand); border: 0; background: none; font-size: 12px; cursor: pointer; }
+
+    .category-layout { height: calc(100vh - 30px - 52px - 68px); display: grid; grid-template-columns: 94px 1fr; overflow: hidden; }
+    .cat-nav { background: #EDF0F5; overflow-y: auto; }
+    .cat-nav button { width: 100%; height: 52px; padding: 0 8px; border: 0; background: transparent; color: #59687E; font-size: 12px; cursor: pointer; }
+    .cat-nav button.active { color: var(--brand); background: white; font-weight: 700; border-left: 3px solid var(--brand); }
+    .cat-products { padding: 14px; overflow-y: auto; background: white; }
+    .subcat-title { display: flex; align-items: center; margin-bottom: 10px; font-size: 14px; font-weight: 730; }
+    .filter-chip { margin-left:auto; padding:5px 8px; color:var(--muted); background:#F4F6F9; border:0; border-radius:5px; font-size:10px; }
+    .list-card { display: grid; grid-template-columns: 86px 1fr; gap: 11px; padding: 11px 0; background: white; border-bottom: 1px solid #EDF0F4; cursor: pointer; }
+    .list-visual { height: 86px; display: grid; place-items: center; color: var(--visual-color,var(--brand)); background: var(--visual-bg,#EDF1FF); border-radius: 9px; }
+    .list-visual .ico { width: 40px; height: 40px; stroke-width:1.3; }
+    .list-name { font-size: 13px; font-weight: 650; line-height: 19px; }
+    .list-spec { margin-top:5px; color:var(--muted); font-size:10px; }
+    .list-price { margin-top:13px; color:var(--brand); font-size:16px; font-weight:780; }
+    .list-price small { font-size:10px; }
+
+    .filter-tabs { display:flex; gap:22px; padding:0 16px; background:white; border-bottom:1px solid var(--line); overflow-x:auto; }
+    .filter-tab { height:44px; padding:0; white-space:nowrap; color:var(--muted); background:none; border:0; border-bottom:2px solid transparent; cursor:pointer; font-size:12px; }
+    .filter-tab.active { color:var(--brand); border-color:var(--brand); font-weight:700; }
+    .orders-wrap { padding:12px 14px; }
+    .order-card { margin-bottom:11px; padding:14px; background:white; border:1px solid #E9EDF3; border-radius:var(--radius); }
+    .order-card[hidden] { display:none; }
+    .order-top { display:flex; align-items:center; padding-bottom:11px; border-bottom:1px solid #EDF0F4; }
+    .order-no { color:var(--muted); font-size:10px; }
+    .order-state { margin-left:auto; color:var(--brand); font-size:11px; font-weight:700; }
+    .order-state.warn { color:var(--warning); }
+    .order-main { display:grid; grid-template-columns:72px 1fr; gap:10px; padding:12px 0; }
+    .order-main .list-visual { height:72px; }
+    .order-main .list-visual .ico { width:34px; height:34px; }
+    .order-points { margin-top:7px; font-size:12px; font-weight:700; }
+    .order-foot { display:flex; justify-content:flex-end; gap:7px; padding-top:11px; border-top:1px solid #EDF0F4; }
+    .ghost-btn, .primary-btn { min-height:34px; padding:0 13px; border:1px solid var(--line); border-radius:7px; background:white; cursor:pointer; font-size:11px; font-weight:650; }
+    .primary-btn { color:white; background:var(--brand); border-color:var(--brand); }
+
+    .profile-hero { padding:20px 18px 25px; color:white; background:var(--nav); }
+    .profile-company { display:flex; align-items:center; gap:12px; }
+    .company-logo { width:46px; height:46px; display:grid; place-items:center; color:white; background:var(--brand); border-radius:13px 13px 5px 13px; font-size:17px; font-weight:800; }
+    .profile-company h2 { margin:0; font-size:17px; }
+    .profile-company p { margin:5px 0 0; color:#9EABC0; font-size:11px; }
+    .account-panel { display:grid; grid-template-columns:1.25fr .75fr; gap:1px; margin-top:19px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.1); }
+    .account-cell { padding:13px; background:rgba(255,255,255,.04); }
+    .account-cell span { color:#9EABC0; font-size:10px; }
+    .account-cell strong { display:block; margin-top:6px; font-size:20px; }
+    .profile-content { padding:14px; }
+    .menu-card { background:white; border:1px solid #E9EDF3; border-radius:var(--radius); overflow:hidden; }
+    .menu-row { min-height:54px; display:flex; align-items:center; gap:11px; padding:0 14px; border-bottom:1px solid #EDF0F4; cursor:pointer; }
+    .menu-row:last-child { border:0; }
+    .menu-icon { width:30px; height:30px; display:grid; place-items:center; color:var(--brand); background:#EEF2FF; border-radius:8px; }
+    .menu-icon .ico { width:17px; height:17px; }
+    .menu-row span { font-size:13px; }
+    .menu-row small { margin-left:auto; color:var(--muted); }
+    .ledger { margin-top:14px; }
+    .ledger-row { display:grid; grid-template-columns:1fr auto; padding:13px 14px; background:white; border-bottom:1px solid #EDF0F4; }
+    .ledger-name { font-size:12px; font-weight:650; }
+    .ledger-date { margin-top:4px; color:var(--muted); font-size:9px; }
+    .ledger-amount { align-self:center; font-size:13px; font-weight:750; }
+    .ledger-amount.plus { color:var(--success); }
+
+    .product-hero { height:300px; display:grid; place-items:center; position:relative; color:var(--brand); background:#E9EEFF; }
+    .product-hero .ico { width:130px; height:130px; stroke-width:1; }
+    .floating-back { position:absolute; left:14px; top:13px; width:36px; height:36px; display:grid; place-items:center; color:white; background:rgba(20,35,59,.68); border:0; border-radius:50%; cursor:pointer; }
+    .floating-back .ico { width:18px; height:18px; transform:rotate(90deg); }
+    .product-detail { padding:17px 16px 96px; background:white; }
+    .detail-price { color:var(--brand); font-size:25px; font-weight:800; }
+    .detail-price small { font-size:11px; }
+    .detail-equiv { margin-left:8px; color:var(--muted); font-size:11px; }
+    .detail-name { margin:10px 0 0; font-size:18px; line-height:26px; }
+    .detail-desc { margin:7px 0 0; color:var(--muted); font-size:11px; line-height:18px; }
+    .spec-box { margin-top:17px; padding:13px; background:#F7F8FB; border-radius:9px; }
+    .spec-line { display:flex; align-items:center; font-size:12px; }
+    .spec-line + .spec-line { margin-top:12px; }
+    .spec-line span { width:64px; color:var(--muted); }
+    .spec-chip { padding:6px 9px; color:var(--brand); background:white; border:1px solid var(--brand); border-radius:5px; }
+    .bottom-action { position:fixed; left:50%; bottom:0; z-index:15; transform:translateX(-50%); width:min(100%,430px); min-height:72px; display:flex; align-items:center; gap:10px; padding:9px 16px max(9px,env(safe-area-inset-bottom)); background:rgba(255,255,255,.97); border-top:1px solid var(--line); }
+    .bottom-info { flex:1; }
+    .bottom-info span { display:block; color:var(--muted); font-size:9px; }
+    .bottom-info strong { display:block; margin-top:3px; font-size:13px; }
+    .redeem-btn { height:46px; min-width:154px; color:white; background:var(--brand); border:0; border-radius:9px; font-size:14px; font-weight:750; cursor:pointer; }
+
+    .checkout { padding:12px 14px 100px; }
+    .checkout-card { margin-bottom:11px; padding:14px; background:white; border:1px solid #E9EDF3; border-radius:var(--radius); }
+    .address { display:grid; grid-template-columns:30px 1fr auto; gap:9px; align-items:start; }
+    .address-icon { width:30px; height:30px; display:grid; place-items:center; color:var(--brand); background:#EEF2FF; border-radius:8px; }
+    .address-icon .ico { width:17px; height:17px; }
+    .address strong { font-size:13px; }
+    .address p { margin:6px 0 0; color:var(--muted); font-size:11px; line-height:17px; }
+    .summary-row { display:flex; justify-content:space-between; margin-top:12px; color:var(--muted); font-size:12px; }
+    .summary-row.total { padding-top:12px; border-top:1px solid var(--line); color:var(--ink); font-weight:750; }
+    .success-view { min-height:calc(100vh - 30px); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; text-align:center; background:white; }
+    .success-mark { width:70px; height:70px; display:grid; place-items:center; color:white; background:var(--success); border-radius:50%; box-shadow:0 0 0 11px #E9F7F4; }
+    .success-mark .ico { width:34px; height:34px; }
+    .success-view h1 { margin:28px 0 8px; font-size:23px; }
+    .success-view p { margin:0; color:var(--muted); font-size:12px; line-height:20px; }
+    .result-card { width:100%; margin-top:25px; padding:15px; text-align:left; background:#F7F8FB; border-radius:10px; }
+    .result-row { display:flex; justify-content:space-between; padding:7px 0; font-size:12px; }
+    .result-row span { color:var(--muted); }
+    .result-actions { width:100%; display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:22px; }
+    .result-actions button { height:43px; }
+
+    .tabbar { position:fixed; left:50%; bottom:0; z-index:12; transform:translateX(-50%); width:min(100%,430px); min-height:68px; display:grid; grid-template-columns:repeat(4,1fr); padding-bottom:env(safe-area-inset-bottom); background:rgba(255,255,255,.97); border-top:1px solid var(--line); backdrop-filter:blur(15px); }
+    .tab-item { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:#8793A5; background:none; border:0; cursor:pointer; font-size:10px; }
+    .tab-item .ico { width:21px; height:21px; }
+    .tab-item.active { color:var(--brand); font-weight:700; }
+    .toast { position:fixed; left:50%; bottom:88px; z-index:30; transform:translate(-50%,15px); width:max-content; max-width:calc(100% - 48px); padding:10px 14px; color:white; background:rgba(20,35,59,.94); border-radius:7px; opacity:0; pointer-events:none; transition:.2s ease; font-size:11px; }
+    .toast.show { opacity:1; transform:translate(-50%,0); }
+
+    @media (max-width: 520px) {
+      html, body { background:var(--canvas); }
+      .phone { width:100%; box-shadow:none; }
+      .statusbar { padding-top:env(safe-area-inset-top); height:calc(30px + env(safe-area-inset-top)); }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none!important; transition:none!important; } }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8v10h-6v-6H9v6H3V11Z"/></symbol>
+    <symbol id="i-category" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+    <symbol id="i-order" viewBox="0 0 24 24"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2Z"/><path d="M9 7h6M9 11h6M9 15h4"/></symbol>
+    <symbol id="i-building" viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16"/><path d="M9 21v-4h6v4M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="m21 8-9 5-9-5 9-5 9 5Z"/><path d="m3 8 9 5v9l-9-5V8Zm18 0-9 5v9l9-5V8Z"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8h14l1 13H4L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2M8 12v2M16 12v2"/></symbol>
+    <symbol id="i-cup" viewBox="0 0 24 24"><path d="M7 3h10l-1 18H8L7 3Z"/><path d="M7 8h10M9 3V1h6v2"/></symbol>
+    <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M10 13h.01M14 13h.01M18 13h.01M7 16h10"/></symbol>
+    <symbol id="i-paper" viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6V3Z"/><path d="M15 3v4h4M9 11h6M9 15h6"/></symbol>
+    <symbol id="i-location" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+    <symbol id="i-truck" viewBox="0 0 24 24"><path d="M3 5h11v11H3V5Zm11 4h4l3 4v3h-7V9Z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M4 6h14a2 2 0 0 1 2 2v10H4a2 2 0 0 1-2-2V5a3 3 0 0 1 3-3h12"/><path d="M16 11h6v4h-6a2 2 0 1 1 0-4Z"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.7 2.7 0 1 1 4.1 2.3c-.9.5-1.6 1-1.6 2.2M12 17h.01"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+  </svg>
+
+  <main class="phone">
+    <div class="statusbar"><span id="clock">9:41</span><div class="status-icons"><div class="signal"><i></i><i></i><i></i><i></i></div><span>5G</span><div class="battery"></div></div></div>
+
+    <section class="screen active" data-screen="home">
+      <div class="hero"><div class="mini-head"><div class="mini-identity"><span class="company">拾马商城</span><small>长沙星河科技</small></div><svg class="ico switch"><use href="#i-chevron"/></svg><div class="head-actions"><button class="head-btn" aria-label="消息"><svg class="ico"><use href="#i-bell"/></svg></button></div></div><div class="balance-card"><div class="balance-label">企业可用积分</div><div class="balance-value"><span data-balance-available>128,600</span><small>积分</small></div><div class="balance-meta"><span class="rate">100 积分 = ¥1</span><span>冻结 <b data-balance-frozen>2,800</b></span></div></div></div>
+      <label class="search" data-open="category"><svg class="ico"><use href="#i-search"/></svg><input readonly placeholder="搜索商品名称或分类"></label>
+      <div class="content"><div class="quick-cats"><button class="cat" data-open="category"><span class="cat-icon"><svg class="ico"><use href="#i-paper"/></svg></span><span>办公用品</span></button><button class="cat" data-open="category"><span class="cat-icon"><svg class="ico"><use href="#i-keyboard"/></svg></span><span>数码家电</span></button><button class="cat" data-open="category"><span class="cat-icon"><svg class="ico"><use href="#i-cup"/></svg></span><span>生活日用</span></button><button class="cat" data-open="category"><span class="cat-icon"><svg class="ico"><use href="#i-bag"/></svg></span><span>商务箱包</span></button></div>
+        <div class="notice"><svg class="ico"><use href="#i-truck"/></svg><span>工作日 16:00 前兑换，现货商品预计 48 小时内发出</span></div>
+        <div class="section-head"><span class="section-title">企业精选</span><span class="section-sub">本月新上架</span><button class="more" data-open="category">查看全部 ›</button></div>
+        <div class="product-grid">
+          <button class="product-card" data-open="product"><div class="product-visual" style="--visual-bg:#EAEFFF;--visual-color:#315CF5"><span class="stock-flag">现货</span><svg class="ico"><use href="#i-bag"/></svg></div><div class="product-info"><div class="product-name">多功能商务双肩包 轻量通勤款</div><div class="product-spec">黑色 · 20L</div><div class="points">16,800<small>积分</small><span class="equiv">≈ ¥168</span></div></div></button>
+          <button class="product-card" data-open="product"><div class="product-visual" style="--visual-bg:#E8F7F3;--visual-color:#14A889"><span class="stock-flag">现货</span><svg class="ico"><use href="#i-cup"/></svg></div><div class="product-info"><div class="product-name">真空不锈钢保温杯 便携随行</div><div class="product-spec">暖灰 · 500ml</div><div class="points">8,900<small>积分</small><span class="equiv">≈ ¥89</span></div></div></button>
+          <button class="product-card" data-open="product"><div class="product-visual" style="--visual-bg:#FFF2DC;--visual-color:#D5871E"><span class="stock-flag">库存充足</span><svg class="ico"><use href="#i-paper"/></svg></div><div class="product-info"><div class="product-name">A4 复印纸 70g 高白 5包装</div><div class="product-spec">整箱 · 2500张</div><div class="points">11,800<small>积分</small><span class="equiv">≈ ¥118</span></div></div></button>
+          <button class="product-card" data-open="product"><div class="product-visual" style="--visual-bg:#F0ECFF;--visual-color:#7659D6"><span class="stock-flag">仅剩 8 件</span><svg class="ico"><use href="#i-keyboard"/></svg></div><div class="product-info"><div class="product-name">无线蓝牙键盘 K3 多设备切换</div><div class="product-spec">深空灰 · 84键</div><div class="points">23,800<small>积分</small><span class="equiv">≈ ¥238</span></div></div></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="category"><header class="plain-head"><h1 class="plain-title">商品分类</h1><button class="plain-action">搜索</button></header><div class="category-layout"><aside class="cat-nav"><button class="active">办公用品</button><button>数码家电</button><button>生活日用</button><button>商务箱包</button><button>员工关怀</button></aside><div class="cat-products"><div class="subcat-title">办公耗材<button class="filter-chip">价格筛选</button></div><article class="list-card" data-open="product"><div class="list-visual" style="--visual-bg:#FFF2DC;--visual-color:#D5871E"><svg class="ico"><use href="#i-paper"/></svg></div><div><div class="list-name">A4 复印纸 70g 高白 5包装</div><div class="list-spec">整箱 · 库存充足</div><div class="list-price">11,800 <small>积分</small></div></div></article><article class="list-card" data-open="product"><div class="list-visual"><svg class="ico"><use href="#i-box"/></svg></div><div><div class="list-name">硒鼓墨盒套装 标准容量</div><div class="list-spec">黑色 · 适配多机型</div><div class="list-price">12,600 <small>积分</small></div></div></article><div class="subcat-title" style="margin-top:18px">办公设备</div><article class="list-card" data-open="product"><div class="list-visual" style="--visual-bg:#F0ECFF;--visual-color:#7659D6"><svg class="ico"><use href="#i-keyboard"/></svg></div><div><div class="list-name">无线蓝牙键盘 K3 多设备切换</div><div class="list-spec">深空灰 · 仅剩 8 件</div><div class="list-price">23,800 <small>积分</small></div></div></article></div></div></section>
+
+    <section class="screen" data-screen="orders"><header class="plain-head"><h1 class="plain-title">企业订单</h1></header><div class="filter-tabs"><button class="filter-tab active" data-filter="全部">全部</button><button class="filter-tab" data-filter="处理中">处理中</button><button class="filter-tab" data-filter="待发货">待发货</button><button class="filter-tab" data-filter="已发货">已发货</button><button class="filter-tab" data-filter="售后">售后</button></div><div class="orders-wrap" id="ordersWrap"><article class="order-card" data-order-status="待发货"><div class="order-top"><span class="order-no">HD202608130184</span><span class="order-state">待发货</span></div><div class="order-main"><div class="list-visual"><svg class="ico"><use href="#i-bag"/></svg></div><div><div class="list-name">多功能商务双肩包</div><div class="list-spec">黑色 · 20L × 1</div><div class="order-points">16,900 积分</div></div></div><div class="order-foot"><button class="ghost-btn" data-toast="订单详情已展开">订单详情</button><button class="primary-btn" data-toast="当前订单正在备货">查看进度</button></div></article><article class="order-card" data-order-status="已发货"><div class="order-top"><span class="order-no">HD202608120166</span><span class="order-state">已发货</span></div><div class="order-main"><div class="list-visual" style="--visual-bg:#E8F7F3;--visual-color:#14A889"><svg class="ico"><use href="#i-cup"/></svg></div><div><div class="list-name">真空不锈钢保温杯</div><div class="list-spec">暖灰 · 500ml × 2</div><div class="order-points">17,800 积分</div></div></div><div class="order-foot"><button class="ghost-btn" data-toast="售后入口已打开">申请售后</button><button class="primary-btn" data-toast="物流：长沙转运中心运输中">查看物流</button></div></article><article class="order-card" data-order-status="处理中"><div class="order-top"><span class="order-no">HD202608110132</span><span class="order-state warn">确认中</span></div><div class="order-main"><div class="list-visual" style="--visual-bg:#F0ECFF;--visual-color:#7659D6"><svg class="ico"><use href="#i-keyboard"/></svg></div><div><div class="list-name">无线蓝牙键盘 K3</div><div class="list-spec">深空灰 · 84键 × 1</div><div class="order-points">23,800 积分</div></div></div><div class="order-foot"><button class="ghost-btn" data-toast="平台正在确认供货结果，请勿重复下单">查看详情</button></div></article></div></section>
+
+    <section class="screen" data-screen="profile"><div class="profile-hero"><div class="profile-company"><div class="company-logo">星</div><div><h2>长沙星河科技</h2><p>企业统一积分账户 · 预付</p></div></div><div class="account-panel"><div class="account-cell"><span>可用积分</span><strong data-account-available>128,600</strong></div><div class="account-cell"><span>冻结积分</span><strong data-account-frozen>2,800</strong></div></div></div><div class="profile-content"><div class="menu-card"><div class="menu-row" data-open="orders"><span class="menu-icon"><svg class="ico"><use href="#i-order"/></svg></span><span>企业订单</span><small>全部订单 ›</small></div><div class="menu-row" data-toast="兑换比例：100 积分 = ¥1"><span class="menu-icon"><svg class="ico"><use href="#i-wallet"/></svg></span><span>积分规则</span><small>100 积分 = ¥1 ›</small></div><div class="menu-row" data-toast="配送与售后说明已打开"><span class="menu-icon"><svg class="ico"><use href="#i-help"/></svg></span><span>兑换帮助</span><small>›</small></div></div><div class="section-head"><span class="section-title">最近积分变动</span></div><div class="ledger" id="ledger"><div class="ledger-row"><div><div class="ledger-name">兑换 · 多功能商务双肩包</div><div class="ledger-date">今天 14:28</div></div><strong class="ledger-amount">-16,900</strong></div><div class="ledger-row"><div><div class="ledger-name">取消订单 · A4 复印纸</div><div class="ledger-date">08-12 16:42</div></div><strong class="ledger-amount plus">+11,800</strong></div><div class="ledger-row"><div><div class="ledger-name">企业充值发行</div><div class="ledger-date">08-01 10:18</div></div><strong class="ledger-amount plus">+100,000</strong></div></div></div></section>
+
+    <section class="screen" data-screen="product"><div class="product-hero"><button class="floating-back" data-back aria-label="返回"><svg class="ico"><use href="#i-chevron"/></svg></button><svg class="ico"><use href="#i-bag"/></svg></div><div class="product-detail"><div><span class="detail-price">16,800 <small>积分</small></span><span class="detail-equiv">人民币等值 ¥168</span></div><h1 class="detail-name">多功能商务双肩包 轻量通勤款</h1><p class="detail-desc">耐磨防泼水面料，独立电脑仓，适合日常通勤与短途差旅。</p><div class="spec-box"><div class="spec-line"><span>规格</span><strong class="spec-chip">黑色 · 20L</strong></div><div class="spec-line"><span>库存</span><strong style="color:var(--success)">现货</strong></div><div class="spec-line"><span>配送</span><strong>预计 48 小时内发出</strong></div><div class="spec-line"><span>兑换口径</span><strong>企业结算价 ¥168 × 100</strong></div><div class="spec-line"><span>售后</span><strong>支持质量问题退换</strong></div></div></div><div class="bottom-action"><div class="bottom-info"><span>企业可用积分</span><strong data-product-available>128,600</strong></div><button class="redeem-btn" data-open="checkout">立即兑换</button></div></section>
+
+    <section class="screen" data-screen="checkout"><header class="plain-head"><button class="back" data-back aria-label="返回"><svg class="ico"><use href="#i-chevron"/></svg></button><h1 class="plain-title">确认兑换</h1></header><div class="checkout"><section class="checkout-card address"><span class="address-icon"><svg class="ico"><use href="#i-location"/></svg></span><div><strong>徐先生　138****6608</strong><p>湖南省长沙市岳麓区麓谷企业广场 A3 栋 12 楼</p></div><span>›</span></section><section class="checkout-card"><div class="order-main" style="padding:0"><div class="list-visual"><svg class="ico"><use href="#i-bag"/></svg></div><div><div class="list-name">多功能商务双肩包</div><div class="list-spec">黑色 · 20L</div><div class="order-points">16,800 积分 × 1</div></div></div></section><section class="checkout-card"><div class="summary-row"><span>商品积分</span><strong>16,800</strong></div><div class="summary-row"><span>配送积分</span><strong>0</strong></div><div class="summary-row total"><span>合计</span><strong style="color:var(--brand)">16,800 积分</strong></div><div class="summary-row"><span>兑换后可用</span><strong>111,800 积分</strong></div></section></div><div class="bottom-action"><div class="bottom-info"><span>本次合计</span><strong style="color:var(--brand)">16,800 积分</strong></div><button class="redeem-btn" id="confirmRedeem">确认兑换</button></div></section>
+
+    <section class="screen" data-screen="success"><div class="success-view"><div class="success-mark"><svg class="ico"><use href="#i-check"/></svg></div><h1>兑换申请已提交</h1><p>16,800 积分已冻结，平台正在确认供货结果。<br>请勿重复提交订单。</p><div class="result-card"><div class="result-row"><span>订单编号</span><strong>HD202608130185</strong></div><div class="result-row"><span>兑换积分</span><strong>16,800</strong></div><div class="result-row"><span>当前状态</span><strong style="color:var(--warning)">供货确认中</strong></div></div><div class="result-actions"><button class="ghost-btn" data-open="home">继续逛逛</button><button class="primary-btn" data-open="orders">查看订单</button></div></div></section>
+
+    <nav class="tabbar" aria-label="底部标签栏"><button class="tab-item active" data-tab="home"><svg class="ico"><use href="#i-home"/></svg><span>商城</span></button><button class="tab-item" data-tab="category"><svg class="ico"><use href="#i-category"/></svg><span>分类</span></button><button class="tab-item" data-tab="orders"><svg class="ico"><use href="#i-order"/></svg><span>订单</span></button><button class="tab-item" data-tab="profile"><svg class="ico"><use href="#i-building"/></svg><span>企业</span></button></nav>
+    <div class="toast" id="toast">操作已完成</div>
+  </main>
+
+  <script>
+    const accountState = {
+      availablePoints: 128600,
+      frozenPoints: 2800,
+      redemptionPoints: 16800,
+      submitted: false
+    };
+    const historyStack = ['home'];
+    const rootScreens = ['home','category','orders','profile'];
+    const tabbar = document.querySelector('.tabbar');
+    const formatPoints = value => value.toLocaleString('zh-CN');
+    function renderAccountState() {
+      document.querySelectorAll('[data-balance-available], [data-account-available], [data-product-available]').forEach(element => {
+        element.textContent = formatPoints(accountState.availablePoints);
+      });
+      document.querySelectorAll('[data-balance-frozen], [data-account-frozen]').forEach(element => {
+        element.textContent = formatPoints(accountState.frozenPoints);
+      });
+    }
+    function appendSubmittedOrder() {
+      const order = document.createElement('article');
+      order.className = 'order-card';
+      order.dataset.orderStatus = '处理中';
+      order.innerHTML = `<div class="order-top"><span class="order-no">HD202608130185</span><span class="order-state warn">供货确认中</span></div><div class="order-main"><div class="list-visual"><svg class="ico"><use href="#i-bag"/></svg></div><div><div class="list-name">多功能商务双肩包</div><div class="list-spec">黑色 · 20L × 1</div><div class="order-points">${formatPoints(accountState.redemptionPoints)} 积分</div></div></div><div class="order-foot"><button class="ghost-btn" data-toast="平台正在确认供货结果，请勿重复下单">查看详情</button></div>`;
+      order.querySelector('[data-toast]').addEventListener('click', event => notify(event.currentTarget.dataset.toast));
+      document.getElementById('ordersWrap').prepend(order);
+    }
+    function appendFrozenLedger() {
+      const row = document.createElement('div');
+      row.className = 'ledger-row';
+      row.innerHTML = `<div><div class="ledger-name">兑换冻结 · 多功能商务双肩包</div><div class="ledger-date">刚刚</div></div><strong class="ledger-amount">-${formatPoints(accountState.redemptionPoints)}（冻结）</strong>`;
+      document.getElementById('ledger').prepend(row);
+    }
+    function showScreen(name, push = true) {
+      document.querySelectorAll('.screen').forEach(screen => screen.classList.toggle('active', screen.dataset.screen === name));
+      document.querySelectorAll('.tab-item').forEach(tab => tab.classList.toggle('active', tab.dataset.tab === name));
+      tabbar.style.display = rootScreens.includes(name) ? 'grid' : 'none';
+      if (push && historyStack.at(-1) !== name) historyStack.push(name);
+      document.querySelector('.phone').scrollTo?.({top:0, behavior:'smooth'});
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+    function goBack() {
+      if (historyStack.length > 1) historyStack.pop();
+      showScreen(historyStack.at(-1) || 'home', false);
+    }
+    function notify(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message; toast.classList.add('show');
+      clearTimeout(window.toastTimer); window.toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+    }
+    document.querySelectorAll('[data-tab]').forEach(el => el.addEventListener('click', () => showScreen(el.dataset.tab)));
+    document.querySelectorAll('[data-open]').forEach(el => el.addEventListener('click', () => showScreen(el.dataset.open)));
+    document.querySelectorAll('[data-back]').forEach(el => el.addEventListener('click', goBack));
+    document.querySelectorAll('[data-toast]').forEach(el => el.addEventListener('click', () => notify(el.dataset.toast)));
+    document.querySelectorAll('.cat-nav button').forEach(el => el.addEventListener('click', () => { document.querySelectorAll('.cat-nav button').forEach(x=>x.classList.remove('active')); el.classList.add('active'); notify(`已切换到${el.textContent}`); }));
+    document.querySelectorAll('.filter-tab').forEach(el => el.addEventListener('click', () => {
+      const filter = el.dataset.filter;
+      document.querySelectorAll('.filter-tab').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      document.querySelectorAll('.order-card[data-order-status]').forEach(card => {
+        card.hidden = filter !== '全部' && card.dataset.orderStatus !== filter;
+      });
+      notify(`已筛选${el.textContent}订单`);
+    }));
+    document.getElementById('confirmRedeem').addEventListener('click', event => {
+      const button = event.currentTarget;
+      if (accountState.submitted) {
+        showScreen('success');
+        notify('订单已提交，请勿重复兑换');
+        return;
+      }
+      button.disabled = true;
+      button.textContent = '提交中…';
+      setTimeout(() => {
+        accountState.availablePoints -= accountState.redemptionPoints;
+        accountState.frozenPoints += accountState.redemptionPoints;
+        accountState.submitted = true;
+        appendSubmittedOrder();
+        appendFrozenLedger();
+        renderAccountState();
+        showScreen('success');
+        button.textContent = '已提交';
+      }, 500);
+    });
+    renderAccountState();
+  </script>
+</body>
+</html>

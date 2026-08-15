@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>拾马商城开放接口文档</title>
+  <style>
+    :root {
+      --brand: #315CF5;
+      --brand-dark: #2445BE;
+      --ink: #14233B;
+      --ink-2: #35445D;
+      --muted: #718096;
+      --line: #E4E9F1;
+      --canvas: #F4F6FA;
+      --surface: #FFFFFF;
+      --success: #14A889;
+      --warning: #E89A28;
+      --danger: #E24D5C;
+      --code: #0B1425;
+      --sidebar: 286px;
+      --header: 68px;
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--canvas); }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--canvas);
+      font-family: Inter, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    button, input { font: inherit; }
+    button:focus-visible, input:focus-visible, a:focus-visible {
+      outline: 3px solid rgba(49,92,245,.22);
+      outline-offset: 2px;
+    }
+    [hidden] { display: none !important; }
+
+    .doc-header {
+      height: var(--header);
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 24px;
+      background: rgba(255,255,255,.96);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(16px);
+    }
+    .doc-brand { display: flex; align-items: center; gap: 11px; color: var(--ink); text-decoration: none; font-weight: 780; }
+    .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; color: white; background: var(--brand); border-radius: 9px 9px 3px 9px; font-weight: 820; }
+    .brand-copy { display: grid; gap: 2px; }
+    .brand-copy small { color: var(--muted); font-size: 9px; font-weight: 650; letter-spacing: .14em; }
+    .version { padding: 4px 8px; color: var(--brand-dark); background: #EEF2FF; border-radius: 5px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; font-weight: 760; }
+    .doc-search { width: min(360px, 32vw); height: 38px; position: relative; margin-left: auto; }
+    .doc-search::before { content: "⌕"; position: absolute; left: 12px; top: 7px; color: var(--muted); font-size: 18px; }
+    .doc-search input { width: 100%; height: 100%; padding: 0 12px 0 36px; color: var(--ink); background: #F7F8FB; border: 1px solid var(--line); border-radius: 8px; outline: 0; }
+    .doc-search input:focus { border-color: #AABAF7; background: white; box-shadow: 0 0 0 3px rgba(49,92,245,.08); }
+    .menu-button { display: none; width: 38px; height: 38px; padding: 0; color: var(--ink); background: white; border: 1px solid var(--line); border-radius: 7px; cursor: pointer; }
+
+    .doc-sidebar {
+      width: var(--sidebar);
+      position: fixed;
+      inset: var(--header) auto 0 0;
+      z-index: 20;
+      padding: 22px 16px 36px;
+      overflow-y: auto;
+      background: #F9FAFC;
+      border-right: 1px solid var(--line);
+    }
+    .toc-label { margin: 0 10px 10px; color: #96A0B1; font-size: 10px; font-weight: 760; letter-spacing: .12em; }
+    .doc-sidebar nav { display: grid; gap: 3px; }
+    .doc-sidebar a { min-height: 42px; display: grid; grid-template-columns: 28px minmax(0,1fr); align-items: center; gap: 7px; padding: 7px 10px; color: var(--muted); text-decoration: none; border-radius: 7px; font-size: 12px; line-height: 1.35; }
+    .doc-sidebar a span { color: #A2ADBD; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; }
+    .doc-sidebar a:hover { color: var(--ink); background: #F0F3F8; }
+    .doc-sidebar a.active { color: var(--brand-dark); background: #EAF0FF; font-weight: 700; }
+    .doc-sidebar a.active span { color: var(--brand); }
+    .doc-overlay { display: none; }
+
+    .doc-main { margin-left: var(--sidebar); padding: calc(var(--header) + 40px) clamp(28px, 5vw, 72px) 100px; }
+    .doc-content { width: min(100%, 980px); margin: 0 auto; }
+    .intro { padding: 0 0 34px; border-bottom: 1px solid var(--line); }
+    .eyebrow { margin: 0 0 12px; color: var(--brand); font-size: 11px; font-weight: 800; letter-spacing: .12em; }
+    .intro h1 { max-width: 720px; margin: 0; font-size: clamp(30px, 4vw, 48px); line-height: 1.12; letter-spacing: -.045em; }
+    .intro-lead { max-width: 760px; margin: 16px 0 0; color: var(--ink-2); font-size: 15px; line-height: 1.85; }
+    .prototype-note { margin: 24px 0 0; padding: 11px 13px; color: #5B6680; background: #F0F3F8; border-left: 3px solid var(--brand); font-size: 12px; line-height: 1.65; }
+    .quick-facts { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); margin-top: 22px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+    .quick-facts div { min-height: 72px; display: grid; align-content: center; gap: 6px; padding: 0 16px; background: white; border-right: 1px solid var(--line); }
+    .quick-facts div:last-child { border-right: 0; }
+    .quick-facts span { color: var(--muted); font-size: 10px; }
+    .quick-facts code, .quick-facts strong { font-size: 12px; }
+    .quick-facts code { color: var(--brand-dark); overflow-wrap: anywhere; }
+
+    .doc-section { padding-top: 58px; scroll-margin-top: calc(var(--header) + 14px); }
+    .section-heading { display: grid; grid-template-columns: 52px minmax(0,1fr); gap: 14px; align-items: start; margin-bottom: 20px; }
+    .section-index { color: var(--brand); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; font-weight: 780; padding-top: 5px; }
+    .section-heading h2 { margin: 0; font-size: 24px; letter-spacing: -.025em; }
+    .section-heading p { max-width: 720px; margin: 8px 0 0; color: var(--muted); line-height: 1.75; }
+
+    .endpoint-card { margin-top: 14px; overflow: hidden; background: white; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 28px rgba(20,35,59,.035); }
+    .endpoint-heading { min-height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 18px; background: #FBFCFE; border-bottom: 1px solid var(--line); }
+    .method { min-width: 52px; padding: 5px 7px; color: white; border-radius: 5px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; font-weight: 820; text-align: center; }
+    .method.get { background: var(--success); }
+    .method.post { background: var(--brand); }
+    .endpoint-path { color: var(--ink); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; overflow-wrap: anywhere; }
+    .endpoint-body { padding: 18px; }
+    .endpoint-body > p { margin: 0; color: var(--ink-2); line-height: 1.75; }
+    .subheading { margin: 22px 0 10px; font-size: 12px; font-weight: 780; }
+    .parameter-table { width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+    table { width: 100%; min-width: 640px; border-collapse: collapse; }
+    th { height: 40px; padding: 0 12px; color: #68758A; background: #F7F9FC; border-bottom: 1px solid var(--line); font-size: 10px; text-align: left; }
+    td { min-height: 46px; padding: 11px 12px; border-bottom: 1px solid #EDF0F5; color: var(--ink-2); font-size: 11px; line-height: 1.55; vertical-align: top; }
+    tr:last-child td { border-bottom: 0; }
+    td code { color: var(--brand-dark); font-size: 10px; }
+    .required { color: var(--danger); font-weight: 720; }
+    .optional { color: var(--muted); }
+    .code-shell { position: relative; overflow: hidden; background: var(--code); border-radius: 8px; }
+    pre { margin: 0; padding: 18px 70px 18px 18px; overflow-x: auto; color: #D8E1F0; font: 11px/1.7 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; tab-size: 2; }
+    .code-copy { position: absolute; top: 10px; right: 10px; height: 30px; padding: 0 10px; color: #C8D2E2; background: #17233A; border: 1px solid #2B3850; border-radius: 5px; cursor: pointer; font-size: 10px; }
+    .code-copy:hover { color: white; border-color: #495A77; }
+    .rule-list { margin: 12px 0 0; padding-left: 18px; color: var(--ink-2); line-height: 1.8; font-size: 12px; }
+    .status-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 12px; }
+    .status-flow span { padding: 5px 8px; color: var(--ink-2); background: #F1F4F8; border-radius: 5px; font-size: 10px; }
+    .status-flow i { color: #A2ADBD; font-style: normal; }
+    .empty-state { margin-top: 36px; padding: 34px; color: var(--muted); background: white; border: 1px dashed #C7D0DF; border-radius: var(--radius); text-align: center; }
+
+    @media (max-width: 860px) {
+      :root { --header: 62px; }
+      .doc-header { padding: 0 14px; }
+      .menu-button { display: grid; place-items: center; }
+      .brand-copy small, .version { display: none; }
+      .doc-brand { font-size: 13px; }
+      .brand-mark { width: 30px; height: 30px; }
+      .doc-search { width: auto; min-width: 0; flex: 1; }
+      .doc-search input { font-size: 12px; }
+      .doc-sidebar { width: min(310px, 84vw); transform: translateX(-105%); transition: transform .2s ease; box-shadow: 18px 0 46px rgba(20,35,59,.16); }
+      .doc-sidebar.open { transform: translateX(0); }
+      .doc-overlay { position: fixed; inset: var(--header) 0 0; z-index: 15; display: block; background: rgba(11,20,37,.36); opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility .2s ease; }
+      .doc-overlay.open { opacity: 1; visibility: visible; }
+      .doc-main { margin-left: 0; padding: calc(var(--header) + 28px) 16px 72px; }
+      .intro h1 { font-size: 30px; }
+      .intro-lead { font-size: 14px; }
+      .quick-facts { grid-template-columns: 1fr; }
+      .quick-facts div { min-height: 62px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .quick-facts div:last-child { border-bottom: 0; }
+      .doc-section { padding-top: 44px; }
+      .section-heading { grid-template-columns: 38px minmax(0,1fr); gap: 8px; }
+      .section-heading h2 { font-size: 20px; }
+      .endpoint-heading { align-items: flex-start; padding: 13px; }
+      .endpoint-path { padding-top: 4px; }
+      .endpoint-body { padding: 14px; }
+      pre { padding-left: 14px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="doc-header">
+    <button class="menu-button" data-doc-menu aria-label="打开目录">目录</button>
+    <a class="doc-brand" href="#quick-start"><span class="brand-mark">拾</span><span class="brand-copy">拾马商城开放接口文档<small>SHIMA OPEN API</small></span></a>
+    <span class="version">v1.0</span>
+    <label class="doc-search"><input type="search" data-doc-search aria-label="搜索接口文档" placeholder="搜索接口、字段或错误码"></label>
+  </header>
+
+  <aside class="doc-sidebar" data-doc-toc aria-label="接口文档目录">
+    <p class="toc-label">INTEGRATION FLOW</p>
+    <nav>
+      <a class="active" data-doc-link="quick-start" href="#quick-start"><span>01</span>接入说明与鉴权</a>
+      <a data-doc-link="catalog" href="#catalog"><span>02</span>商品分类与商品/SKU查询</a>
+      <a data-doc-link="inventory-freight" href="#inventory-freight"><span>03</span>收货地址、实时库存与运费查询</a>
+      <a data-doc-link="orders-create" href="#orders-create"><span>04</span>创建订单</a>
+      <a data-doc-link="orders-query" href="#orders-query"><span>05</span>订单查询与状态说明</a>
+      <a data-doc-link="logistics" href="#logistics"><span>06</span>物流查询</a>
+      <a data-doc-link="cancel-errors" href="#cancel-errors"><span>07</span>取消订单与异常处理</a>
+      <a data-doc-link="balance" href="#balance"><span>08</span>账户余额查询</a>
+      <a data-doc-link="callbacks" href="#callbacks"><span>09</span>回调通知与幂等规则</a>
+      <a data-doc-link="error-codes" href="#error-codes"><span>10</span>公共错误码与联调示例</a>
+    </nav>
+  </aside>
+  <button class="doc-overlay" data-doc-overlay aria-label="关闭目录"></button>
+
+  <main class="doc-main" id="docMain">
+    <div class="doc-content">
+      <section class="intro">
+        <p class="eyebrow">B2B SUPPLY INTEGRATION</p>
+        <h1>从商品查询到履约回传，一套接口完成供货接入</h1>
+        <p class="intro-lead">面向拾马商城 API 供货客户的统一接入说明。接口按真实业务调用顺序组织，帮助研发快速定位请求参数、状态变化和异常处理规则。</p>
+        <p class="prototype-note">原型示例：当前接口路径与数据仅用于确认文档结构，正式联调以双方确认的接口合同、环境地址和分配凭证为准。</p>
+        <div class="quick-facts">
+          <div><span>示例 Base URL</span><code>https://api.example.com/openapi/v1</code></div>
+          <div><span>数据格式</span><strong>application/json; charset=utf-8</strong></div>
+          <div><span>文档版本</span><strong>v1.0 · 2026-08-14</strong></div>
+        </div>
+      </section>
+
+      <div class="empty-state" data-doc-empty hidden>未找到匹配接口，请更换关键字或清空搜索条件。</div>
+
+      <section class="doc-section" id="quick-start" data-doc-section>
+        <div class="section-heading"><span class="section-index">01</span><div><h2>接入说明与鉴权</h2><p>服务端调用业务接口前获取短期访问令牌；应用凭证由商务开通后通过安全渠道单独交付，不在公开文档中展示。</p></div></div>
+        <article class="endpoint-card" data-doc-entry data-search-text="接入 鉴权 获取访问令牌 auth token app_key signature request_id">
+          <div class="endpoint-heading"><span class="method post">POST</span><code class="endpoint-path">/openapi/v1/auth/token</code></div>
+          <div class="endpoint-body">
+            <p>在首次调用或令牌过期前触发。令牌只用于服务端请求，不得下发到浏览器或小程序端。</p>
+            <h3 class="subheading">请求参数</h3>
+            <div class="parameter-table"><table><thead><tr><th>参数</th><th>类型</th><th>必填</th><th>说明</th><th>示例</th></tr></thead><tbody><tr><td><code>app_key</code></td><td>String</td><td class="required">是</td><td>平台分配的应用标识</td><td>YOUR_APP_KEY</td></tr><tr><td><code>timestamp</code></td><td>Long</td><td class="required">是</td><td>秒级 Unix 时间戳，允许误差 5 分钟</td><td>1786694400</td></tr><tr><td><code>request_id</code></td><td>String</td><td class="required">是</td><td>调用方生成的唯一请求号</td><td>YOUR_REQUEST_ID</td></tr><tr><td><code>signature</code></td><td>String</td><td class="required">是</td><td>按签名规则计算的摘要</td><td>YOUR_SIGNATURE</td></tr></tbody></table></div>
+            <h3 class="subheading">请求示例</h3>
+            <div class="code-shell"><pre><code>{
+  "app_key": "YOUR_APP_KEY",
+  "timestamp": 1786694400,
+  "request_id": "YOUR_REQUEST_ID",
+  "signature": "YOUR_SIGNATURE"
+}</code></pre><button class="code-copy" data-code-copy>复制</button></div>
+            <h3 class="subheading">响应示例</h3>
+            <div class="code-shell"><pre><code>{
+  "code": "SUCCESS",
+  "data": {
+    "access_token": "YOUR_ACCESS_TOKEN",
+    "expires_in": 7200
+  }
+}</code></pre><button class="code-copy" data-code-copy>复制</button></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="doc-section" id="catalog" data-doc-section>
+        <div class="section-heading"><span class="section-index">02</span><div><h2>商品分类与商品/SKU查询</h2><p>拉取平台开放分类和可供货商品。商品只返回当前客户可见范围，分类与商品状态变化后以最新查询结果为准。</p></div></div>
+        <article class="endpoint-card" data-doc-entry data-search-text="商品 分类 SKU 查询 categories products 成本 结算价">
+          <div class="endpoint-heading"><span class="method get">GET</span><code class="endpoint-path">/openapi/v1/categories</code></div>
+          <div class="endpoint-body"><p>获取平台两级商品分类。返回值仅包含当前可用的分类节点。</p><h3 class="subheading">请求参数</h3><div class="parameter-table"><table><thead><tr><th>参数</th><th>位置</th><th>类型</th><th>必填</th><th>说明</th></tr></thead><tbody><tr><td><code>updated_after</code></td><td>Query</td><td>String</td><td class="optional">否</td><td>只返回指定时间后更新的分类</td></tr><tr><td><code>Authorization</code></td><td>Header</td><td>String</td><td class="required">是</td><td>Bearer YOUR_ACCESS_TOKEN</td></tr></tbody></table></div><h3 class="subheading">响应示例</h3><div class="code-shell"><pre><code>{
+  "code": "SUCCESS",
+  "data": [{
+    "category_id": "CAT-DIGITAL-01",
+    "parent_id": "CAT-DIGITAL",
+    "name": "键鼠外设",
+    "level": 2,
+    "status": "ENABLED"
+  }]
+}</code></pre><button class="code-copy" data-code-copy>复制</button></div></div>
+        </article>
+        <article class="endpoint-card" data-doc-entry data-search-text="商品 SKU 明细 products sku_id 结算价 可售状态">
+          <div class="endpoint-heading"><span class="method get">GET</span><code class="endpoint-path">/openapi/v1/products/{sku_id}</code></div>
+          <div class="endpoint-body"><p>查询单个 SKU 的名称、规格、结算价和当前可售状态。价格为当前请求客户的动态结算结果。</p><h3 class="subheading">响应示例</h3><div class="code-shell"><pre><code>{
+  "code": "SUCCESS",
+  "data": {
+    "sku_id": "SKU-10284-02",
+    "product_name": "无线蓝牙键盘 K3",
+    "settlement_price": 238.00,
+    "sale_status": "ON_SALE",
+    "updated_at": "2026-08-14T18:00:00+08:00"
+  }
+}</code></pre><button class="code-copy" data-code-copy>复制</button></div></div>
+        </article>
+      </section>
+
+      <section class="doc-section" id="inventory-freight" data-doc-section>
+        <div class="section-heading"><span class="section-index">03</span><div><h2>收货地址、实时库存与运费查询</h2><p>集采商品库存与收货地址相关。创建订单前必须以实际地址查询实时库存，再查询对应运费。</p></div></div>
+        <article class="endpoint-card" data-doc-entry data-search-text="库存 实时库存 收货地址 inventory query address sku quantity">
+          <div class="endpoint-heading"><span class="method post">POST</span><code class="endpoint-path">/openapi/v1/inventory/query</code></div>
+          <div class="endpoint-body"><p>提交实际收货区域和 SKU 数量，返回当前可售数量。查询结果仅用于下单前校验，不形成库存预占。</p><h3 class="subheading">请求参数</h3><div class="parameter-table"><table><thead><tr><th>参数</th><th>类型</th><th>必填</th><th>说明</th><th>示例</th></tr></thead><tbody><tr><td><code>sku_id</code></td><td>String</td><td class="required">是</td><td>平台 SKU 编码</td><td>SKU-10284-02</td></tr><tr><td><code>quantity</code></td><td>Integer</td><td class="required">是</td><td>计划购买数量，大于 0</td><td>2</td></tr><tr><td><code>province_code</code></td><td>String</td><td class="required">是</td><td>省级行政区编码</td><td>430000</td></tr><tr><td><code>city_code</code></td><td>String</td><td class="required">是</td><td>市级行政区编码</td><td>430100</td></tr><tr><td><code>district_code</code></td><td>String</td><td class="required">是</td><td>区县行政区编码</td><td>430104</td></tr></tbody></table></div><h3 class="subheading">响应示例</h3><div class="code-shell"><pre><code>{
+  "code": "SUCCESS",
+  "data": {
+    "sku_id": "SKU-10284-02",
+    "available": true,
+    "available_quantity": 83,
+    "checked_at": "2026-08-14T18:12:06+08:00"
+  }
+}</code></pre><button class="code-copy" data-code-copy>复制</button></div></div>
+        </article>
+        <article class="endpoint-card" data-doc-entry data-search-text="运费 freight 收货地址 address 商品数量">
+          <div class="endpoint-heading"><span class="method post">POST</span><code class="endpoint-path">/openapi/v1/freight/query</code></div>
+          <div class="endpoint-body"><p>按实际收货地址和商品明细试算运费。运费结果应与创建订单使用相同地址和商品数量。</p><h3 class="subheading">响应示例</h3><div class="code-shell"><pre><code>{
+  "code": "SUCCESS",
+  "data": {
+    "freight_amount": 12.00,
+    "currency": "CNY",
+    "valid_until": "2026-08-14T18:20:00+08:00"
+  }
+}</code></pre><button class="code-copy" data-code-copy>复制</button></div></div>
+        </article>
+      </section>
+
+      <section class="doc-section" id="orders-create" data-doc-section>
+        <div class="section-heading"><span class="section-index">04</span><div><h2>创建订单</h2><p>库存与运费校验通过后提交订单。调用方订单号是幂等键，同一客户下必须保持唯一。</p></div></div>
+        <article class="endpoint-card" data-doc-entry data-search-text="创建订单 下单 orders client_order_no receiver items 幂等">
+          <div class="endpoint-heading"><span class="method post">POST</span><code class="endpoint-path">/openapi/v1/orders</code></div>
+          <div class="endpoint-body"><p>平台受理后返回平台订单号和初始状态。响应超时时不得直接换新订单号重下，应先查询原调用方订单号。</p><h3 class="subheading">请求参数</h3><div class="parameter-table"><table><thead><tr><th>参数</th><th>类型</th><th>必填</th><th>说明</th></tr></thead><tbody><tr><td><code>client_order_no</code></td><td>String</td><td class="required">是</td><td>客户订单号，同一客户内唯一</td></tr><tr><td><code>receiver</code></td><td>Object</td><td class="required">是</td><td>收件人、手机号、行政区编码和详细地址</td></tr><tr><td><code>items</code></td><td>Array</td><td class="required">是</td><td>SKU 与购买数量，至少一项</td></tr><tr><td><code>callback_url</code></td><td>String</td><td class="optional">否</td><td>订单状态回调地址</td></tr></tbody></table></div><h3 class="subheading">请求示例</h3><div class="code-shell"><pre><code>{
+  "client_order_no": "CLIENT-ORDER-20260814-001",
+  "receiver": {
+    "name": "张先生",
+    "mobile": "13800000000",
+    "province_code": "430000",
+    "city_code": "430100",
+    "district_code": "430104",
+    "address": "示例路 88 号"
+  },
+  "items": [{ "sku_id": "SKU-10284-02", "quantity": 2 }],
+  "callback_url": "https://client.example.com/callback/orders"
+}</code></pre><button class="code-copy" data-code-copy>复制</button></div><h3 class="subheading">状态起点</h3><div class="status-flow"><span>已受理</span><i>→</i><span>采购处理中</span><i>→</i><span>待发货</span></div></div>
+        </article>
+      </section>
+
+      <section class="doc-section" id="orders-query" data-doc-section>
+        <div class="section-heading"><span class="section-index">05</span><div><h2>订单查询与状态说明</h2><p>按调用方订单号查询平台受理、采购、履约和取消结果。查询接口是超时或回调缺失时的最终核对入口。</p></div></div>
+        <article class="endpoint-card" data-doc-entry data-search-text="订单查询 状态 orders client_order_no purchase_status fulfillment_status">
+          <div class="endpoint-heading"><span class="method get">GET</span><code class="endpoint-path">/openapi/v1/orders/{client_order_no}</code></div>
+          <div class="endpoint-body"><p>返回订单主状态以及采购、履约等并行状态。调用方不得只依据物流字段推断采购是否成功。</p><h3 class="subheading">响应参数</h3><div class="parameter-table"><table><thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead><tbody><tr><td><code>order_status</code></td><td>String</td><td>平台订单主状态</td></tr><tr><td><code>purchase_status</code></td><td>String</td><td>上游采购状态</td></tr><tr><td><code>fulfillment_status</code></td><td>String</td><td>发货与签收状态</td></tr><tr><td><code>failure_reason</code></td><td>String</td><td>失败或异常原因，无异常时为空</td></tr></tbody></table></div><h3 class="subheading">响应示例</h3><div class="code-shell"><pre><code>{
+  "code": "SUCCESS",
+  "data": {
+    "client_order_no": "CLIENT-ORDER-20260814-001",
+    "platform_order_no": "SM202608140001",
+    "order_status": "PROCESSING",
+    "purchase_status": "ACCEPTED",
+    "fulfillment_status": "WAITING_SHIPMENT"
+  }
+}</code></pre><button class="code-copy" data-code-copy>复制</button></div></div>
+        </article>
+      </section>
+
+      <section class="doc-section" id="logistics" data-doc-section>
+        <div class="section-heading"><span class="section-index">06</span><div><h2>物流查询</h2><p>订单发货后查询包裹、承运商和物流轨迹。一个订单可能拆分为多个包裹。</p></div></div>
+        <article class="endpoint-card" data-doc-entry data-search-text="物流 查询 logistics 运单 承运商 包裹 tracking">
+          <div class="endpoint-heading"><span class="method get">GET</span><code class="endpoint-path">/openapi/v1/orders/{client_order_no}/logistics</code></div>
+          <div class="endpoint-body"><p>采购成功但尚未发货时返回空包裹数组，不视为接口失败。</p><h3 class="subheading">响应示例</h3><div class="code-shell"><pre><code>{
+  "code": "SUCCESS",
+  "data": {
+    "packages": [{
+      "package_no": "PKG-001",
+      "carrier": "顺丰速运",
+      "tracking_no": "SF_EXAMPLE_001",
+      "status": "IN_TRANSIT",
+      "traces": [{
+        "time": "2026-08-14T17:20:00+08:00",
+        "description": "包裹已由承运商揽收"
+      }]
+    }]
+  }
+}</code></pre><button class="code-copy" data-code-copy>复制</button></div></div>
+        </article>
+      </section>
+
+      <section class="doc-section" id="cancel-errors" data-doc-section>
+        <div class="section-heading"><span class="section-index">07</span><div><h2>取消订单与异常处理</h2><p>订单是否可取消取决于采购和履约状态。取消请求被受理不代表最终取消成功，应继续查询或等待回调。</p></div></div>
+        <article class="endpoint-card" data-doc-entry data-search-text="取消订单 异常 cancel reason_code 采购失败 结果未知">
+          <div class="endpoint-heading"><span class="method post">POST</span><code class="endpoint-path">/openapi/v1/orders/{client_order_no}/cancel</code></div>
+          <div class="endpoint-body"><p>仅允许取消尚未进入不可逆履约阶段的订单。重复取消同一订单返回当前取消结果。</p><h3 class="subheading">请求参数</h3><div class="parameter-table"><table><thead><tr><th>参数</th><th>类型</th><th>必填</th><th>说明</th></tr></thead><tbody><tr><td><code>reason_code</code></td><td>String</td><td class="required">是</td><td>双方约定的取消原因编码</td></tr><tr><td><code>reason_note</code></td><td>String</td><td class="optional">否</td><td>补充说明，最多 200 字</td></tr><tr><td><code>request_id</code></td><td>String</td><td class="required">是</td><td>取消请求幂等号</td></tr></tbody></table></div><h3 class="subheading">异常处理</h3><ul class="rule-list"><li>响应超时：使用原订单号查询，不创建重复订单。</li><li>采购结果未知：保持处理中，等待回调或主动查询。</li><li>库存不足：订单不进入采购成功状态，按错误码提示客户。</li></ul></div>
+        </article>
+      </section>
+
+      <section class="doc-section" id="balance" data-doc-section>
+        <div class="section-heading"><span class="section-index">08</span><div><h2>账户余额查询</h2><p>预存模式客户可查询当前人民币可用余额；月结客户返回授信额度和已用额度。余额仅用于资金校对。</p></div></div>
+        <article class="endpoint-card" data-doc-entry data-search-text="账户余额 查询 balance 可用余额 授信 月结 资金校对">
+          <div class="endpoint-heading"><span class="method get">GET</span><code class="endpoint-path">/openapi/v1/account/balance</code></div>
+          <div class="endpoint-body"><p>余额不足时平台可拒绝预存客户的新订单。调用方不应使用余额接口推断单笔订单最终结算状态。</p><h3 class="subheading">响应示例</h3><div class="code-shell"><pre><code>{
+  "code": "SUCCESS",
+  "data": {
+    "settlement_mode": "PREPAID",
+    "available_balance": 268780.00,
+    "frozen_amount": 18600.00,
+    "currency": "CNY",
+    "queried_at": "2026-08-14T18:28:00+08:00"
+  }
+}</code></pre><button class="code-copy" data-code-copy>复制</button></div></div>
+        </article>
+      </section>
+
+      <section class="doc-section" id="callbacks" data-doc-section>
+        <div class="section-heading"><span class="section-index">09</span><div><h2>回调通知与幂等规则</h2><p>订单状态变化后平台向客户登记的回调地址推送事件。客户必须按事件 ID 幂等消费，并返回明确成功响应。</p></div></div>
+        <article class="endpoint-card" data-doc-entry data-search-text="回调 通知 webhook callback 幂等 event_id 重试 签名">
+          <div class="endpoint-heading"><span class="method post">POST</span><code class="endpoint-path">{client_callback_url}</code></div>
+          <div class="endpoint-body"><p>平台调用客户地址。非 2xx、网络超时或响应超时均视为失败，并按退避策略重试。</p><h3 class="subheading">回调示例</h3><div class="code-shell"><pre><code>{
+  "event_id": "EVT-20260814-0001",
+  "event_type": "ORDER_STATUS_CHANGED",
+  "occurred_at": "2026-08-14T18:30:00+08:00",
+  "data": {
+    "client_order_no": "CLIENT-ORDER-20260814-001",
+    "order_status": "SHIPPED"
+  },
+  "signature": "YOUR_CALLBACK_SIGNATURE"
+}</code></pre><button class="code-copy" data-code-copy>复制</button></div><h3 class="subheading">幂等与重试</h3><ul class="rule-list"><li>客户使用 <code>event_id</code> 去重，重复事件返回成功。</li><li>业务处理成功后返回 HTTP 200；不要先返回成功再丢弃处理结果。</li><li>达到最大重试次数后，客户通过订单查询接口主动补偿。</li></ul></div>
+        </article>
+      </section>
+
+      <section class="doc-section" id="error-codes" data-doc-section>
+        <div class="section-heading"><span class="section-index">10</span><div><h2>公共错误码与联调示例</h2><p>HTTP 状态表示传输结果，业务字段 <code>code</code> 表示具体处理结论。调用方应同时记录请求号和错误码。</p></div></div>
+        <article class="endpoint-card" data-doc-entry data-search-text="公共错误码 联调 errors AUTH_FAILED DUPLICATE_REQUEST INVENTORY_NOT_ENOUGH RATE_LIMITED">
+          <div class="endpoint-heading"><span class="method get">GET</span><code class="endpoint-path">/openapi/v1/errors</code></div>
+          <div class="endpoint-body"><p>以下为原型中的代表性公共错误码，用于确认文档表达方式。</p><h3 class="subheading">错误码</h3><div class="parameter-table"><table><thead><tr><th>错误码</th><th>含义</th><th>是否可重试</th><th>处理建议</th></tr></thead><tbody><tr><td><code>AUTH_FAILED</code></td><td>签名或令牌校验失败</td><td>否</td><td>检查凭证、时间戳和签名串</td></tr><tr><td><code>DUPLICATE_REQUEST</code></td><td>幂等请求重复</td><td>否</td><td>使用原业务单号查询结果</td></tr><tr><td><code>INVENTORY_NOT_ENOUGH</code></td><td>实际地址库存不足</td><td>条件性</td><td>调整数量或地址后重新查询库存</td></tr><tr><td><code>RATE_LIMITED</code></td><td>超过调用频率限制</td><td>是</td><td>按响应中的等待时间退避</td></tr><tr><td><code>UPSTREAM_RESULT_UNKNOWN</code></td><td>上游处理结果暂不明确</td><td>否</td><td>保持处理中并主动查询</td></tr></tbody></table></div><h3 class="subheading">失败响应示例</h3><div class="code-shell"><pre><code>{
+  "code": "INVENTORY_NOT_ENOUGH",
+  "message": "当前收货地址可售数量不足",
+  "request_id": "YOUR_REQUEST_ID",
+  "data": {
+    "sku_id": "SKU-10284-02",
+    "available_quantity": 1
+  }
+}</code></pre><button class="code-copy" data-code-copy>复制</button></div></div>
+        </article>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const searchInput = document.querySelector('[data-doc-search]');
+    const toc = document.querySelector('[data-doc-toc]');
+    const overlay = document.querySelector('[data-doc-overlay]');
+
+    function filterDocumentation(keyword) {
+      const normalized = keyword.trim().toLowerCase();
+      let visibleCount = 0;
+      document.querySelectorAll('[data-doc-section]').forEach(section => {
+        const entries = [...section.querySelectorAll('[data-doc-entry]')];
+        entries.forEach(entry => {
+          const visible = !normalized || entry.dataset.searchText.toLowerCase().includes(normalized);
+          entry.hidden = !visible;
+          if (visible) visibleCount += 1;
+        });
+        section.hidden = normalized ? entries.every(entry => entry.hidden) : false;
+      });
+      document.querySelector('[data-doc-empty]').hidden = visibleCount > 0;
+    }
+
+    function setActiveSection(sectionId) {
+      document.querySelectorAll('[data-doc-link]').forEach(link => link.classList.toggle('active', link.dataset.docLink === sectionId));
+    }
+
+    function toggleDocumentMenu(force) {
+      const open = typeof force === 'boolean' ? force : !toc.classList.contains('open');
+      toc.classList.toggle('open', open);
+      overlay.classList.toggle('open', open);
+      document.body.classList.toggle('menu-open', open);
+    }
+
+    async function copyCode(button) {
+      const text = button.closest('.code-shell').querySelector('code').innerText;
+      let copied = false;
+      if (navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(text);
+          copied = true;
+        } catch (error) {
+          copied = false;
+        }
+      }
+      if (!copied) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        copied = document.execCommand('copy');
+        textarea.remove();
+      }
+      const original = '复制';
+      button.textContent = copied ? '已复制' : '请手工复制';
+      window.setTimeout(() => button.textContent = original, 1500);
+    }
+
+    searchInput.addEventListener('input', event => filterDocumentation(event.target.value));
+    document.querySelector('[data-doc-menu]').addEventListener('click', () => toggleDocumentMenu());
+    overlay.addEventListener('click', () => toggleDocumentMenu(false));
+    document.querySelectorAll('[data-doc-link]').forEach(link => link.addEventListener('click', event => {
+      const section = document.getElementById(link.dataset.docLink);
+      if (!section) return;
+      event.preventDefault();
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setActiveSection(link.dataset.docLink);
+      toggleDocumentMenu(false);
+    }));
+    document.querySelectorAll('[data-code-copy]').forEach(button => button.addEventListener('click', () => copyCode(button)));
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(entries => {
+        const visible = entries.filter(entry => entry.isIntersecting).sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) setActiveSection(visible.target.id);
+      }, { rootMargin: '-20% 0px -68% 0px', threshold: [0, .2, .5] });
+      document.querySelectorAll('[data-doc-section]').forEach(section => observer.observe(section));
+    }
+  </script>
+</body>
+</html>
